@@ -1,3 +1,6 @@
 [submodule "project/Libft/libft-unit-test"]
 	path = project/Libft/libft-unit-test
 	url = git@github.com:alelievr/libft-unit-test.git
+[submodule "project/Ft_printf/ft_printf_tester"]
+	path = project/Ft_printf/ft_printf_tester
+	url = git@github.com:paulo-santana/ft_printf_tester.git
