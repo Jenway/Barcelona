@@ -1,6 +1,7 @@
 CC = gcc
 FLAGS = -Wall -Wextra -Werror
 NAME = libftprintf.a
+LIBFT = libft.a
 SRC_DIR = src
 OBJ_DIR = obj
 TEST_SRC_DIR = test
@@ -24,6 +25,8 @@ $(OBJ_DIR)/%.o: $(TEST_SRC_DIR)/%.c | $(OBJ_DIR)
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
+
+bonus: all
 
 test: $(TEST_OBJS) $(NAME)
 	$(CC) $(FLAGS) $(TEST_OBJS) $(NAME) $(LIBFT) -o run_test

@@ -4,22 +4,43 @@
 
 int main()
 {
-    printf("Hello, %s!\n", "world");
-    ft_printf("Hello, %s!\n", "world");
-    ft_printf(" NULL %s NULL \n", (char*)NULL);
-    ft_printf(" %d \n", INT_MIN);
-    ft_printf(" %p %p \n", LONG_MIN, LONG_MAX);
-    printf(" %p %p \n", (void*)LONG_MIN, (void*)LONG_MAX);
+    printf("hello,%s\n", "world");
+    // printf("hello,%3d\n", 32);
+    // ft_printf("hello,%3d\n", 32);
+    // printf("hello,%-3dagain\n", 32);
+    // ft_printf("hello,%-3dagain\n", 32);
+    // printf("hello,%03d\n", 5);
+    // ft_printf("hello,%03d\n", 5);
 
-    ft_printf(" %p %p \n", (-1), (16));
-    printf(" %p %p \n", (void*)(-1), (void*)(16));
+    // printf("hello,%x\n", 0x1234);
+    // ft_printf("hello,%x\n", 0x1234);
 
-    ft_printf(" %p %p \n", (17), 15);
-    printf(" %p %p \n", (void*)(17), (void*)(15));
+    // printf("hello,%#5x\n", 0x1234);
+    // ft_printf("hello,%#5x\n", 0x1234);
 
-    ft_printf(" %p %p \n", 0, LONG_MAX);
-    printf(" %p %p \n", (void*)0, (void*)LONG_MAX);
+    // printf("hello,%#8x\n", 0x1234);
+    // ft_printf("hello,%#8x\n", 0x1234);
 
-    ft_printf(" hello %s %d %u %x %X with this\n", "world", 42, 42, 42, 42);
+    // printf("hello,%10c\n", 'a');
+    // ft_printf("hello,%10c\n", 'a');
+
+    // printf("%7s\n", "a4564654655465");
+    // ft_printf("%7s\n", "a");
+
+    // ft_printf("%30p\n", (void*)0x7ffdd4e7b91f);
+    // ft_printf("%9x\n", (unsigned int)3735929054);
+    // ft_printf("%.4x\n", 11);
+    // ft_printf("%.5d\n", -1234);
+    // ft_printf("%-10.5d\n", 2147483647);
+    // ft_printf("%.0d\n", 0);
+    // ft_printf("%-1.0d5\n", -10);
+    // ft_printf("%-1.0x6\n", -10);
+    // ft_printf("%d", 0);
+    // ft_printf("%d %d\n", 2147483647, (int)-2147483648);
+    // ft_printf("%p\n", (void*)0x7fffd8dbba44);
+    // ft_printf("%14p is the address", (void*)0x7ffe6b8e60c9);
+    // printf("%01.d\n", 0);
+    ft_printf("%01.d\n", 0);
+
     return 0;
 }

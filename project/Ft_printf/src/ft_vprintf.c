@@ -1,59 +1,70 @@
 #include "../ft_printf.h"
 
-typedef int (*format_handler_t)(va_list);
+static int ft_isdigit(int c) { return (c >= '0' && c <= '9'); }
 
-typedef struct format_specifier {
-    char specifier;
-    format_handler_t handler;
-} format_specifier_t;
-
-static int handle_char(va_list args) { return ft_putchar(va_arg(args, int)); }
-
-static int handle_hex_lower(va_list args) { return ft_puthex(va_arg(args, unsigned int), 0); }
-
-static int handle_hex_upper(va_list args) { return ft_puthex(va_arg(args, unsigned int), 1); }
-
-static int handle_pointer(va_list args) { return ft_putptr(va_arg(args, void*)); }
-
-static int handle_unsigned(va_list args) { return ft_putunbr(va_arg(args, unsigned int)); }
-
-static int handle_int(va_list args) { return ft_putnbr(va_arg(args, int)); }
-
-static int handle_string(va_list args) { return ft_putstr(va_arg(args, char*)); }
-
-static int handle_percent(va_list args)
+// read a number from the format string
+static int read_number(const char** format)
 {
-    (void)args; /* 显式标记为未使用*/
-    return ft_putchar('%');
+    int number = 0;
+    while (ft_isdigit(**format)) {
+        number = number * 10 + (**format - '0');
+        (*format)++;
+    }
+    return number;
 }
 
-static format_specifier_t format_handlers[] = {
-    { 'c', handle_char },
-    { 'x', handle_hex_lower },
-    { 'X', handle_hex_upper },
-    { 'p', handle_pointer },
-    { 'u', handle_unsigned },
-    { 'd', handle_int },
-    { 'i', handle_int },
-    { 's', handle_string },
-    { '%', handle_percent },
-};
-
-static int format_cnt = sizeof(format_handlers) / sizeof(format_specifier_t);
-
-int ft_vprintf(const char* format, va_list args)
+int ft_vprintf(const char* format, va_list va)
 {
-
     int result = 0;
+    unsigned int flags = DEFAULT_FLAGS,
+                 width = DEFAULT_WIDTH,
+                 precision = DEFAULT_PRECISION;
+
     for (; *format; format++) {
         if (*format == '%') {
+            flags = DEFAULT_FLAGS;
+            width = DEFAULT_WIDTH;
+            precision = DEFAULT_PRECISION;
             format++;
-            for (int i = 0; i < format_cnt; i++) {
-                if (format_handlers[i].specifier == *format) {
-                    result += format_handlers[i].handler(args);
-                    break;
+
+            while (*format == '-' || *format == '+' || *format == ' ' || *format == '#' || *format == '0') {
+                if (*format == '-') {
+                    flags &= ~FLAGS_LEFT;
+                } else if (*format == '+') {
+                    flags |= FLAGS_PLUS;
+                } else if (*format == ' ') {
+                    flags |= FLAGS_SPACE;
+                } else if (*format == '#') {
+                    flags |= FLAGS_HASH;
+                } else if (*format == '0') {
+                    flags |= FLAGS_ZEROPAD;
+                }
+                format++;
+            }
+
+            // width
+            if (*format == '*') {
+                width = va_arg(va, int);
+                format++;
+            } else if (ft_isdigit(*format)) {
+                width = read_number(&format);
+            }
+
+            // precision
+            if (*format == '.') {
+                flags |= FLAGS_PRECISION;
+                // '0' flag is ignored when precision is present
+                flags &= ~FLAGS_ZEROPAD;
+                format++;
+                if (*format == '*') {
+                    precision = va_arg(va, int);
+                    format++;
+                } else {
+                    precision = read_number(&format);
                 }
             }
+
+            result += handle_format_specifier(format, va, flags, width, precision);
         } else {
             result += ft_putchar(*format);
         }

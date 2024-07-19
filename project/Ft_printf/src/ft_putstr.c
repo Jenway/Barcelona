@@ -14,3 +14,19 @@ int ft_putstr(const char* str)
     write(STDOUT_FILENO, str, len);
     return len;
 }
+
+int ft_putnstr(const char* str, int n)
+{
+    static const char* null_str = "(null)";
+    if (!str) {
+        int len = (n < 6) ? n : 6;
+        write(STDOUT_FILENO, null_str, len);
+        return 6;
+    }
+    int len = 0;
+    while (str[len] && len < n) {
+        len++;
+    }
+    write(STDOUT_FILENO, str, len);
+    return len;
+}
