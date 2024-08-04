@@ -12,6 +12,8 @@ all: $(OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+bonus:
+
 clean:
 	rm -f $(OBJ)
 

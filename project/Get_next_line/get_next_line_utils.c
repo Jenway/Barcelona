@@ -1,7 +1,7 @@
 #include "get_next_line.h"
 // Helper function to concatenate two strings
 
-char* ft_strjoin(char* s1, char* s2, size_t len1, size_t len2)
+char* ft_strnjoin(char* s1, char* s2, size_t len1, size_t len2)
 {
     char* result = (char*)malloc(len1 + len2 + 1);
     if (!result)

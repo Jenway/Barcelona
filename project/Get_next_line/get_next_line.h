@@ -11,7 +11,7 @@
 #endif
 
 void ft_bzero(void* s, size_t n);
-char* ft_strjoin(char* s1, char* s2, size_t len1, size_t len2);
+char* ft_strnjoin(char* s1, char* s2, size_t len1, size_t len2);
 int ft_strnchr(char* s, char c, size_t n);
 char* get_next_line(int fd);
 

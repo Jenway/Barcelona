@@ -19,7 +19,7 @@ static char* get_line_helper(int fd, char* buffer, int* seek, int* eof)
         int index = ft_strnchr(buffer + *seek, '\n', BUFFER_SIZE - *seek);
         size_t chunk_len = (index == -1) ? strlen(buffer + *seek) : index + 1U;
 
-        char* temp = ft_strjoin(line, buffer + *seek, line_len, chunk_len);
+        char* temp = ft_strnjoin(line, buffer + *seek, line_len, chunk_len);
         free(line);
         line = temp;
         line_len += chunk_len;
