@@ -4,6 +4,12 @@
 
 Projects from [42 School](https://42.fr), collected from Internet
 
+- `Libft` -> Done
+- `Get_next_line` -> Done
+- `Ft_printf` -> Done
+- FdF -> 🕳️ constructing
+- ans so on 
+
 ## refer
 
 [rphlr/42-Subjects](https://github.com/rphlr/42-Subjects)
