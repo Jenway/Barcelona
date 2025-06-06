@@ -98,8 +98,7 @@ To set up a strong configuration for your sudo group, you have to comply with th
 
 Finally, you have to create a simple script called monitoring.sh. It must be developed in bash.
 
-At server startup, the script will display some information (listed below) on all terminals every 10 minutes (take a look at wall). The banner is optional. No error must
-be visible.
+At server startup, the script will display some information (listed below) on all terminals every 10 minutes (take a look at wall). The banner is optional. No error must be visible.
 
 Your script must always be able to display the following information:
 
