@@ -1,3 +1,4 @@
-obj/
+.cache
+compile_commands.json
+obj
 *.o
-project/Get_next_line/main

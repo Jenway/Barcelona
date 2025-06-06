@@ -7,3 +7,9 @@
 [submodule "project/FdF/minilibx-linux"]
 	path = project/FdF/minilibx-linux
 	url = https://github.com/42paris/minilibx-linux
+[submodule "project/pipex/pipex-tester"]
+	path = project/pipex/pipex-tester
+	url = https://github.com/vfurmane/pipex-tester
+[submodule "project/pipex/42_pipex_tester"]
+	path = project/pipex/42_pipex_tester
+	url = git@github.com:michmos/42_pipex_tester.git
