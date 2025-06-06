@@ -1,0 +1,2 @@
+*.png filter=lfs diff=lfs merge=lfs -text
+guide/FdF_42_example.png filter=lfs diff=lfs merge=lfs -text
