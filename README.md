@@ -4,11 +4,16 @@
 
 Projects from [42 School](https://42.fr), collected from Internet
 
-- `Libft` -> Done
-- `Get_next_line` -> Done
-- `Ft_printf` -> Done
-- FdF -> 🕳️ constructing
-- ans so on 
+## Progress
+
+### Rank 00
+| Rank | Project                                | Guide                                         | Status |
+| ---- | -------------------------------------- | --------------------------------------------- | ------ |
+| 00   | [Libft](project/Libft)                 | [00_libft](guide\00_libft.md)                 | ✅ Done |
+| 01   | [Get_next_line](project/Get_next_line) | [01_get_next_line](guide\01_get_next_line.md) | ✅ Done |
+| 01   | [Ft_printf](project/Ft_printf)         | [01_ft_printf](guide\01_ft_printf.md)         | ✅ Done |
+| 02   | [FdF](project/FdF)                     | [02_fdf](guide\02_fdf.md)                     | 🕳️ constructing |
+
 
 ## refer
 
