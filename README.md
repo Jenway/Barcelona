@@ -12,7 +12,8 @@ Projects from [42 School](https://42.fr), collected from Internet
 | 00   | [Libft](project/Libft)                 | [00_libft](guide\00_libft.md)                 | ✅ Done |
 | 01   | [Get_next_line](project/Get_next_line) | [01_get_next_line](guide\01_get_next_line.md) | ✅ Done |
 | 01   | [Ft_printf](project/Ft_printf)         | [01_ft_printf](guide\01_ft_printf.md)         | ✅ Done |
-| 02   | [FdF](project/FdF)                     | [02_fdf](guide\02_fdf.md)                     | 🕳️ constructing |
+| 02   | [FdF](project/FdF)                     | [02_fdf](guide\02_fdf.md)                     | ✅ Done |
+| 02   | [Pipex](project/pipex)                 | [02_pipex](guide\02_pipex.md)                 | ✅ Done |
 
 
 ## refer
