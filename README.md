@@ -14,6 +14,7 @@ Projects from [42 School](https://42.fr), collected from Internet
 | 01   | [Ft_printf](project/Ft_printf)         | [01_ft_printf](guide\01_ft_printf.md)         | ✅ Done |
 | 02   | [FdF](project/FdF)                     | [02_fdf](guide\02_fdf.md)                     | ✅ Done |
 | 02   | [Pipex](project/pipex)                 | [02_pipex](guide\02_pipex.md)                 | ✅ Done |
+| 02   | [Push_swap](project/push_swap)         | [02_push_swap](guide\02_push_swap.md)         | ✅ Done |
 
 
 ## refer
