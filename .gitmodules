@@ -13,3 +13,9 @@
 [submodule "project/pipex/42_pipex_tester"]
 	path = project/pipex/42_pipex_tester
 	url = git@github.com:michmos/42_pipex_tester.git
+[submodule "project/push_swap/push_swap_tester"]
+	path = project/push_swap/push_swap_tester
+	url = git@github.com:laisarena/push_swap_tester.git
+[submodule "project/push_swap/push_swap_visualizer"]
+	path = project/push_swap/push_swap_visualizer
+	url = git@github.com:o-reo/push_swap_visualizer.git
