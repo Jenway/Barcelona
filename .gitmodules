@@ -19,3 +19,6 @@
 [submodule "project/push_swap/push_swap_visualizer"]
 	path = project/push_swap/push_swap_visualizer
 	url = git@github.com:o-reo/push_swap_visualizer.git
+[submodule "project/minishell/readline"]
+	path = project/minishell/readline
+	url = https://git.savannah.gnu.org/git/readline.git
