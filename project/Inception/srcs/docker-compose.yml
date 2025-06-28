@@ -1,0 +1,120 @@
+services:
+  nginx:
+    build: ./requirements/nginx
+    image: nginx-custom
+    container_name: nginx
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_web_data:/var/www/wordpress
+    depends_on:
+      - wordpress
+    networks:
+      - inception
+    restart: unless-stopped
+    env_file:
+      - .env
+
+  wordpress:
+    build: ./requirements/wordpress
+    image: wordpress-custom
+    container_name: wordpress
+    hostname: wordpress
+    volumes:
+      - wordpress_web_data:/var/www/wordpress
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - inception
+    restart: unless-stopped
+    env_file:
+      - .env
+
+  mariadb:
+    build: ./requirements/mariadb
+    image: mariadb-custom
+    container_name: mariadb
+    hostname: mariadb
+    volumes:
+      - wordpress_db_data:/var/lib/mysql
+    networks:
+      - inception
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -u $$MYSQL_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    env_file:
+      - .env
+
+  redis:
+    build: ./bonus/redis
+    image: redis-custom
+    container_name: redis
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+
+  ftp:
+    build: ./bonus/ftp
+    image: ftp-custom
+    container_name: ftp
+    volumes:
+      - wordpress_web_data:/home/ftpuser/wordpress
+    ports:
+      - "21:21"
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+    env_file:
+      - .env
+
+  static:
+    build: ./bonus/static
+    image: static-custom
+    container_name: static
+    ports:
+      - "8092:80"
+    networks:
+      - inception
+    restart: unless-stopped
+    env_file:
+      - .env      
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+    env_file:
+      - .env
+      
+volumes:
+  wordpress_web_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/wordpress
+  wordpress_db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/mariadb
+
+networks:
+  inception:
+    driver: bridge

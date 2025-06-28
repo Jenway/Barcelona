@@ -2,3 +2,6 @@
 compile_commands.json
 obj
 *.o
+project/Inception/srcs/.env
+project/minishell_bonus/.clang-format
+project/minishell_bonus/minishell
