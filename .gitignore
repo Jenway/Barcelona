@@ -2,6 +2,7 @@
 compile_commands.json
 obj
 *.o
+**/.obsidian
 project/Inception/srcs/.env
 project/minishell_bonus/.clang-format
 project/minishell_bonus/minishell
