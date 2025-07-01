@@ -17,7 +17,7 @@ Projects from [42 School](https://42.fr), collected from Internet
 | 03    |              Philosophers               | [03_philosophers](guide/03_philosophers.md)         | 🧱 ing  |                     |
 | 03    |     [Minishell](project/minishell)      | [03_minishell](guide/03_Minishell.md)               | ✅ Done |                     |
 | 04    |                 MiniRT                  | [04_minirt](guide/04_minirt.md)                     | 🧱 ing  | `Cub3d`             |
-| 04    |               NetPractice               | [04_netpractice](guide/04_netpractice.md)           | 🧱 ing  |                     |
+| 04    |   [NetPractice](project/NetPractice)    | [04_netpractice](guide/04_netpractice.md)           | ✅ Done |                     |
 | 04&05 | [CPP_Modules 00-09](project/cpp_module) | [04_cpp](guide/04_CPP_Module/)                      | ✅ Done |                     |
 | 05    |     [Inception](project\Inception)      | [05_inception](guide/05_inception.md)               | ✅ Done |                     |
 | 05    |                 Webserv                 | [05_webserv](guide/05_webserv.md)                   | 🧱 ing  | `Ft_irc`            |
