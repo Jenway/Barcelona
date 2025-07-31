@@ -1,12 +1,51 @@
 CompileFlags:                     # Tweak the parse settings
-  Add: [-xc++, -Wall, -Wextra, -std=c++23]             # treat all files as C++, enable more warnings
+  Add: [-xc++, -Wall, -Wextra, -Wpedantic,-std=c++23]             # treat all files as C++, enable more warnings
   # Remove: -W*                     # strip all other warning-related flags
   # Compiler: clang++               # Change argv[0] of compile flags to `clang++`
   CompilationDatabase: build    # Load compile commands from this directory
 Diagnostics:
+  UnusedIncludes: Strict  # 或者 None，如果你不想管头文件使用情况
   ClangTidy:
-    Add: *
-    Remove: modernize-use-trailing-return-type
-  UnusedIncludes: Strict
+    Add:
+      - modernize*
+      - performance*
+      - bugprone*
+      - cppcoreguidelines*
+      - google*
+      - readability*
+      - concurrency*
+      - security*
+      - portability*
+      - misc*
+    Remove:
+      - modernize-use-trailing-return-type
+      - cppcoreguidelines-pro-type-vararg   # if using printf-like functions
+      - cppcoreguidelines-owning-memory # 裸指针禁止
+      - cppcoreguidelines-pro-bounds-pointer-arithmetic # 禁止裸指针算术
+      - readability-magic-numbers
+      - readability-braces-around-statements
+      - cppcoreguidelines-macro-usage
+      - cppcoreguidelines-avoid-magic-numbers
+      - cppcoreguidelines-special-member-functions
+      - cppcoreguidelines-avoid-c-arrays
+      - cppcoreguidelines-pro-bounds-array-to-pointer-decay
+      # - readability-identifier-naming
+      - google-readability-braces-around-statements
+      - misc-use-anonymous-namespace
+      - misc-non-private-member-variables-in-classes
+      - readability-identifier-length
+    # Remove: [clang-analyzer-*]  # 可选，禁用静态分析器警告太多的话
+  
 Hover:
   ShowAKA: No
+
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+
+Completion:
+  AllScopes: true
+
+Index:
+  Background: Build

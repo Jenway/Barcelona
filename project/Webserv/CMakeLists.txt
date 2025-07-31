@@ -11,10 +11,15 @@ enable_testing()
 
 find_package(GTest REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(magic_enum REQUIRED)
 
+add_subdirectory(lib/common)
+add_subdirectory(lib/utils)
 add_subdirectory(lib/logger)
+add_subdirectory(lib/tcp)
+
 add_subdirectory(tests)
 
 add_executable(${PROJECT_NAME} src/main.cc)
-target_link_libraries(${PROJECT_NAME} PRIVATE logger)
+target_link_libraries(${PROJECT_NAME} PRIVATE tcp_lib logger)
 target_precompile_headers(${PROJECT_NAME} PRIVATE "lib/logger/include/logger.hpp")

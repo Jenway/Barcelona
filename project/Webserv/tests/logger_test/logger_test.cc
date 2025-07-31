@@ -2,6 +2,7 @@
 
 #include "logger.hpp"
 #include <gtest/gtest.h>
+#include <system_error>
 
 TEST(LoggerTest, BasicMacros)
 {
@@ -17,7 +18,7 @@ TEST(LoggerTest, BasicMacros)
     // 模拟一个错误码
     errno = EPERM; // Operation not permitted
     LOG_ERROR("This is an error message with a system error: {}",
-        Logger::SysError("failed to write file"));
+        std::error_code(EPERM, std::generic_category()).message());
 }
 
 TEST(LoggerTest, LogLevelFiltering)

@@ -34,25 +34,6 @@ enum class LogLevel : int8_t {
     ERROR = 4,
 };
 
-class SysError {
-public:
-    explicit SysError(std::string context)
-        : _context(std::move(context))
-        , _ec(errno, std::generic_category())
-    {
-    }
-
-    friend auto operator<<(std::ostream& os, const SysError& err) -> std::ostream&
-    {
-        return os << err._context << ": " << err._ec.message() << " (code: " << err._ec.value()
-                  << ", category: " << err._ec.category().name() << ")";
-    }
-
-private:
-    std::string _context;
-    std::error_code _ec;
-};
-
 namespace detail {
     // --- 全局设置 ---
     inline auto s_runtimeLogLevel = static_cast<LogLevel>(LOG_LEVEL_THRESHOLD);
@@ -172,10 +153,6 @@ inline void setRuntimeLogLevel(LogLevel level) { Logger::detail::s_runtimeLogLev
 inline void enableColor(bool enable) { Logger::detail::s_enableColorOutput = enable; }
 
 } // namespace Logger
-
-// 为 SysError 提供格式化支持
-template <>
-struct fmt::formatter<Logger::SysError> : fmt::ostream_formatter { };
 
 // --- 日志宏定义 ---
 // 使用 FMT_STRING() 进行编译期格式化字符串检查

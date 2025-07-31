@@ -1,16 +1,55 @@
 # WebServer 开发日志
 
-WebServer：简单的 HTTP server
+WebServer：一个基于现代 C++ 构建的、事件驱动的 HTTP/1.1 服务器。
 
 ## 项目结构
 
-目前还没有开始主体
+项目采用模块化的目录结构，将不同的功能组件分离到各自的库中，并通过 CMake 进行组织。
+
+- `lib/`: 存放所有核心和辅助功能库。
+    - `common/`: 项目级的通用类型定义，如错误码。
+    - `logger/`: 高性能日志库。
+    - `tcp/`: 底层 TCP 网络组件。
+    - `utils/`: 通用的辅助函数。
+- `src/`: 主程序入口 `main.cc`。
+- `tests/`: 存放所有模块的单元测试。
+- `doc/`: 项目文档。
+
+____
 
 ## 核心模块
 
-TODO
+### TCP 网络层 (`lib/tcp`)
+
+TCP 模块提供了一套面向对象的、基于 RAII 的底层网络操作封装。采用 `std::expected` 进行错误传递，为上层事件循环提供健壮、清晰的接口。
+
+#### `FileDescriptor`
+
+一个纯粹的 RAII 包装器，唯一职责是管理文件描述符的生命周期，确保在对象析构时自动调用 `close()`。
+
+#### `Socket`
+
+基于 `FileDescriptor`，封装了核心的套接字操作。
+
+- **无异常设计**: 所有可能失败的操作 (如 `create`, `bind`, `accept`) 均返回 `std::expected<T, std::error_code>`，强制调用者处理错误路径。
+- **现代 API 优先**: 在支持的平台（Linux）上，通过 `socket()` 和 `accept4()` 的标志位，以**原子操作**的方式设置 `O_NONBLOCK` 和 `O_CLOEXEC`，也同时提供了基于 `fcntl` 的可移植回退方案。
+- **默认非阻塞**: 所有创建的套接字默认为非阻塞模式。
+
+#### `Acceptor`
+
+一个高级组件，它将服务器监听的固定流程（`create` -> `bind` -> `listen`）封装在一个工厂函数 `create()` 中，向上层提供了一个简洁的 `accept()` 接口。
+
+____
 
 ## 辅助模块
+
+### 统一错误处理 (`lib/common`)
+
+为了实现全项目统一的、类型安全的错误处理，我们设计了一套基于 `std::error_category` 的系统。
+
+- **`ErrorCode` 枚举**: 定义在 `ErrorCode.hpp` 中，是整个项目的“错误字典”，包含了所有非系统级的、特定于我们应用（如网络、配置、HTTP）的错误码。
+- **自定义 `error_category`**: 我们实现了自己的 `WebServerCategory`，让 `ErrorCode` 枚举无缝融入 C++ 的 `<system_error>` 框架。这使得我们可以直接将自定义的错误码与 `std::error_code` 对象进行比较，如 `if (ec == ErrorCode::Net_InvalidAddress)`。
+- **与 `magic_enum` 集成**: 借助 `magic_enum` 库，我们实现了 `enum` 到字符串的零样板代码、编译期转换，极大地简化了日志记录和调试。
 
 ### Logger 模块
 
@@ -34,25 +73,33 @@ TODO
 - 如果是终端，则**启用**颜色高亮。
 - 如果输出被重定向到文件或管道（例如 `| tee log.txt`），则**自动禁用**颜色，以保证日志文件的纯净。
 
-## 测试模块
+## 测试模块 (`tests/`)
 
-### 测试日志库 Logger
+我们使用 **GoogleTest** 作为测试框架，并为每个模块编写了独立的单元测试。
 
-日志库从设计之初就考虑了可测试性。通过 **GoogleTest** 测试框架，我们实现了：
+### 测试 `Logger` 模块
 
 - **冒烟测试**: 验证所有日志宏在调用时都能正常编译且不引发崩溃。
 - **输出验证测试**: 通过 GTest 内置的工具捕获 `stdout` 和 `stderr`，并使用 GTest Matchers 精确断言日志的输出内容、格式和级别过滤行为的正确性。测试期间会自动禁用颜色，确保测试的稳定性和可靠性。
 
+### 测试 `TCP` 模块
+
+- **正常流程测试**: 验证 `Acceptor` 能成功创建并接受一个（在另一线程中模拟的）客户端连接。
+- **应用错误测试**: 验证当提供无效输入（如非法 IP 地址）时，函数能返回我们自定义的、正确的 `ErrorCode`。
+- **系统状态测试**: 验证在非阻塞模式下，当没有连接到来时，`accept()` 能立即返回并附带一个可被识别为 `EAGAIN` 的 `std::error_code`。
+
+___
+
 ## 开发工作流
 
-项目采用基于 CMake 和 vcpkg 的现代化、模块化开发工作流
+项目采用基于 CMake 和 vcpkg 的现代化、模块化开发工作流。
 
-- **构建系统**: 使用现代 CMake，通过 `target_link_libraries` 的 `INTERFACE` 属性实现了依赖的自动传递。
-- **依赖管理**: 使用 `vcpkg` 管理所有第三方库 (`{fmt}`, `gtest`)，确保了开发环境的一致性和可复现性。
+- **构建系统**: 使用现代 CMake，通过 `target_link_libraries` 的 `PUBLIC` 和 `INTERFACE` 属性实现了依赖的自动传递。
+- **依赖管理**: 使用 `vcpkg` 管理所有第三方库 (`fmt`, `gtest`, `magic_enum`)，确保了开发环境的一致性和可复现性。
 - **编译优化**: 通过 `target_precompile_headers` 将 `logger.hpp` 设置为预编译头，以加速整体编译过程。
 
-项目配备了两个便捷的 shell 脚本：
+项目配备了三个便捷的 shell 脚本：
 
-- `build.sh`: 构建
+- `build.sh`: 重新生成构建系统并编译。
 - `test.sh`: 一键编译并运行所有单元测试。
 - `debug.sh`: 编译并运行主程序，同时将日志输出到屏幕和 `log.txt` 文件。

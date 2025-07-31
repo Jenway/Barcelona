@@ -10,4 +10,8 @@ target_include_directories(logger INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(logger INTERFACE fmt::fmt)
+target_link_libraries(logger INTERFACE
+    common_lib
+    utils_lib
+    fmt::fmt
+)
