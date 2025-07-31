@@ -1,5 +1,4 @@
 #include "Connection.hpp"
-#include "ErrorCode.hpp"
 #include "ISinker.hpp"
 #include "Status.hpp"
 #include "logger.hpp"
@@ -8,7 +7,7 @@
 
 constexpr size_t READ_BUFFER_SIZE = 8192;
 
-Connection::Connection(Socket socket, std::unique_ptr<protocol::IHandler> handler,
+Connection::Connection(std::unique_ptr<Socket> socket, std::unique_ptr<protocol::IHandler> handler,
     std::unique_ptr<ISource> source, std::unique_ptr<ISinker> sinker)
     : state_(core::ConnectionState::READING)
     , socket_(std::move(socket))
@@ -84,12 +83,12 @@ void Connection::updateStateFromProtocol()
         state_ = core::ConnectionState::WRITING;
         break;
     case core::protocol::Status::Finished:
-        LOG_TRACE("Protocol finished on fd {}. Closing connection.", socket_.getFd());
+        LOG_TRACE("Protocol finished on fd {}. Closing connection.", socket_->getFd());
         state_ = core::ConnectionState::CLOSED; // 协议完成，直接关闭
         break;
 
     case core::protocol::Status::Error:
-        LOG_WARN("Protocol error on fd {}. Closing connection.", socket_.getFd());
+        LOG_WARN("Protocol error on fd {}. Closing connection.", socket_->getFd());
         state_ = core::ConnectionState::CLOSED; // 协议出错，立即终止
         break;
     }

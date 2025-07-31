@@ -12,7 +12,7 @@
 
 class Connection {
 public:
-    Connection(Socket socket, std::unique_ptr<protocol::IHandler> handler,
+    Connection(std::unique_ptr<Socket> socket, std::unique_ptr<protocol::IHandler> handler,
         std::unique_ptr<ISource> source, std::unique_ptr<ISinker> sinker);
 
     auto onReadable() -> std::expected<void, std::error_code>;
@@ -29,7 +29,7 @@ private:
 
     core::ConnectionState state_;
 
-    Socket socket_;
+    std::unique_ptr<Socket> socket_;
     std::unique_ptr<ISource> source_;
     std::unique_ptr<ISinker> sinker_;
     std::unique_ptr<protocol::IHandler> handler_;

@@ -3,6 +3,8 @@
 add_library(tcp_lib
     src/Socket.cc
     src/Acceptor.cc
+    src/TcpSinker.cc
+    src/TcpSource.cc
 )
 
 target_include_directories(tcp_lib PUBLIC
