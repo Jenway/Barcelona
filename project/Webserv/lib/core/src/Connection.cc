@@ -48,16 +48,16 @@ auto Connection::onReadable() -> std::expected<void, std::error_code>
 }
 auto Connection::onWritable() -> std::expected<void, std::error_code>
 {
-    auto write_result = handler_->onWriteReady(*sinker_);
+    auto write_result_opt = handler_->onWriteReady(*sinker_);
 
-    if (!write_result) {
+    if (!write_result_opt) {
         state_ = core::ConnectionState::CLOSED;
-        return std::unexpected(write_result.error());
+        return std::unexpected(write_result_opt.error());
     }
 
-    auto write_status = *write_result;
+    auto write_result = *write_result_opt;
 
-    if (write_status == core::WriteStatus::Continue) {
+    if (write_result.status == core::WriteResult::Status::Continue) {
         // 如果只写了一部分，则保持 WRITING 状态，等待下一次 onWritable
         state_ = core::ConnectionState::WRITING;
         return {};

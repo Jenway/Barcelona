@@ -32,7 +32,7 @@ public:
      * @return 返回写入操作的结果，用于指导 Connection 的状态转换。
      */
     virtual auto onWriteReady(ISinker& sinker)
-        -> std::expected<core::WriteStatus, std::error_code>
+        -> std::expected<core::WriteResult, std::error_code>
         = 0;
 
     /**

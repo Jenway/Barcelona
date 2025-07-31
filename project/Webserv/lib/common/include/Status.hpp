@@ -34,13 +34,17 @@ enum class ReadStatus : uint8_t {
 };
 
 /**
- * @enum WriteStatus
+ * @enum WriteResult
  * @brief 描述了向一个 ISinker 写入操作的结果。
  */
-enum class WriteStatus : uint8_t {
-    Finished, ///< 响应已全部发送完毕。
-    Continue, ///< 响应只发送了一部分，需要继续写。
-    Error,
+struct WriteResult {
+    enum Status : uint8_t {
+        Finished, ///< 响应已全部发送完毕。
+        Continue, ///< 响应只发送了一部分，需要继续写。
+    };
+
+    Status status; // 本次写入的状态
+    std::size_t bytes_sent; // 本次写入成功发送的字节数
 };
 
 // -----------------------------------------------------

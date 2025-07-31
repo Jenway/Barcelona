@@ -23,10 +23,10 @@ public:
 // Mock ISinker，让我们可以控制写操作的结果并验证它是否被调用
 class MockSinker : public ISinker {
 public:
-    MOCK_METHOD((std::expected<core::WriteStatus, std::error_code>), write,
+    MOCK_METHOD((std::expected<core::WriteResult, std::error_code>), write,
         (const char* data, size_t len), (override));
-    MOCK_METHOD((std::expected<core::WriteStatus, std::error_code>), sendfile,
-        (int in_fd, size_t count), (override));
+    MOCK_METHOD((std::expected<core::WriteResult, std::error_code>), sendfile,
+        (int in_fd, off_t& offset, size_t count), (override));
 };
 
 // Mock IHandler，完全控制协议的行为
@@ -34,7 +34,8 @@ class MockHandler : public protocol::IHandler {
 public:
     MOCK_METHOD(void, onData, (std::string_view data), (override));
     MOCK_METHOD(void, onReadEOF, (), (override));
-    MOCK_METHOD((std::expected<core::WriteStatus, std::error_code>), onWriteReady,
+
+    MOCK_METHOD((std::expected<core::WriteResult, std::error_code>), onWriteReady,
         (ISinker & sinker), (override));
     MOCK_METHOD(core::protocol::Status, getStatus, (), (const, override));
 };
@@ -76,7 +77,8 @@ TEST_F(ConnectionTest, FullCycleHappyPath)
     // --- 阶段 2: 写 ---
     // 期望 onWritable 被调用时，handler_->onWriteReady() 会被调用
     // 并且我们模拟它一次性发送完成
-    EXPECT_CALL(*handler_ptr_, onWriteReady(_)).WillOnce(Return(core::WriteStatus::Finished));
+    core::WriteResult finished_result { .status = core::WriteResult::Status::Finished, .bytes_sent = 100 };
+    EXPECT_CALL(*handler_ptr_, onWriteReady(_)).WillOnce(Return(finished_result));
 
     // 期望在发送完成后，Connection 再次询问协议状态，此时协议应该说完成了
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::Finished));
@@ -98,7 +100,8 @@ TEST_F(ConnectionTest, PartialWrite)
 
     // --- 第一次写 ---
     // 模拟 Handler 只写了一部分数据，需要继续写
-    EXPECT_CALL(*handler_ptr_, onWriteReady(_)).WillOnce(Return(core::WriteStatus::Continue));
+    core::WriteResult continue_result { .status = core::WriteResult::Status::Continue, .bytes_sent = 50 };
+    EXPECT_CALL(*handler_ptr_, onWriteReady(_)).WillOnce(Return(continue_result));
 
     auto result = connection_.onWritable();
     ASSERT_TRUE(result.has_value());
@@ -109,7 +112,8 @@ TEST_F(ConnectionTest, PartialWrite)
     // --- 第二次写 ---
     // 再次触发 onWritable
     // 这次我们模拟 Handler 发送完成
-    EXPECT_CALL(*handler_ptr_, onWriteReady(_)).WillOnce(Return(core::WriteStatus::Finished));
+    core::WriteResult finished_result { .status = core::WriteResult::Status::Finished, .bytes_sent = 50 };
+    EXPECT_CALL(*handler_ptr_, onWriteReady(_)).WillOnce(Return(finished_result));
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::Finished));
 
     result = connection_.onWritable();
@@ -178,5 +182,23 @@ TEST_F(ConnectionTest, SourceReturnsIoError)
     auto result = connection_.onReadable();
     ASSERT_FALSE(result.has_value());
     EXPECT_EQ(result.error(), permission_denied);
+    EXPECT_TRUE(connection_.isClosed());
+}
+
+// 测试 6: 写入时发生致命 I/O 错误
+TEST_F(ConnectionTest, HandlerReturnsIoErrorOnWrite)
+{
+    // 进入 WRITING 状态
+    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(std::make_pair(core::ReadStatus::GotData, 4)));
+    EXPECT_CALL(*handler_ptr_, onData(_));
+    EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::WantWrite));
+    connection_.onReadable();
+
+    std::error_code broken_pipe = std::make_error_code(std::errc::broken_pipe);
+    EXPECT_CALL(*handler_ptr_, onWriteReady(_)).WillOnce(Return(std::unexpected(broken_pipe)));
+
+    auto result = connection_.onWritable();
+    ASSERT_FALSE(result.has_value());
+    EXPECT_EQ(result.error(), broken_pipe);
     EXPECT_TRUE(connection_.isClosed());
 }
