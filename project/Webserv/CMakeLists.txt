@@ -16,7 +16,9 @@ find_package(magic_enum REQUIRED)
 add_subdirectory(lib/common)
 add_subdirectory(lib/utils)
 add_subdirectory(lib/logger)
+add_subdirectory(lib/io)
 add_subdirectory(lib/tcp)
+add_subdirectory(lib/core)
 
 add_subdirectory(tests)
 

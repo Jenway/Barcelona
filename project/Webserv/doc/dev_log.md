@@ -39,6 +39,37 @@ TCP 模块提供了一套面向对象的、基于 RAII 的底层网络操作封�
 
 一个高级组件，它将服务器监听的固定流程（`create` -> `bind` -> `listen`）封装在一个工厂函数 `create()` 中，向上层提供了一个简洁的 `accept()` 接口。
 
+---
+
+### (`lib/core`, `lib/io`): 状态机与策略模式
+
+在完成了底层 TCP 组件的封装后，我们开始构建服务器的核心逻辑层。为了实现高度的解耦和可测试性，我们借鉴了 Asio 等成熟网络库的设计思想，定义了一套由四个核心抽象组成的架构。
+
+在这个模型中，`Connection` 类本身不执行任何 I/O 操作，而是扮演一个纯粹的**状态机和协调者**。
+
+#### 核心抽象
+
+1.  **`IHandler` (位于 `core`) - The Brain**:
+    一个“协议处理器”的策略接口。它的具体实现（如未来的 `HttpHandler`）封装了所有的应用层逻辑，负责解析收到的数据，并“生产”一个抽象的 `IResponse` 对象。它对 I/O 一无所知。
+
+2.  **`IResponse` (位于 `io`) - The Message**:
+    一个纯粹的标记接口，代表任何一个“可发送的响应”的概念。它将具体的响应数据（如 `HttpResponse`）与发送行为解耦。
+
+3.  **`ISource` (位于 `io`) - The Reader**:
+    一个“数据源”接口，封装了所有的底层**读 I/O** 逻辑。它的具体实现（如未来的 `TcpSource`）知道如何从一个 `Socket` 中读取数据。
+
+4.  **`ISinker` (位于 `io`) - The Writer**:
+    一个“数据发送器”接口，封装了所有的底层**写 I/O** 逻辑。它的具体实现（如未来的 `TcpSinker`）接收一个 `IResponse`，并知道如何将其内容高效地写入 `Socket`（例如，选择 `write` 还是 `sendfile`）。
+
+#### `Connection` 类 (位于 `core`) - The Coordinator
+
+`Connection` 是这个架构的中心，它像一个指挥官，协调其他组件工作：
+- **持有所有权**: 它拥有一个 `Socket`、一个 `IHandler`、一个 `ISource` 和一个 `ISinker` 的实例。
+- **驱动状态机**: 它的核心是 `onReadable()` 和 `onWritable()` 两个方法。
+    - `onReadable()`: 调用 `ISource` 读取数据，然后将数据喂给 `IHandler`。
+    - `onWritable()`: 从 `IHandler` 获取 `IResponse`，然后将其交给 `ISinker` 去发送。
+- **状态转换**: `Connection` 内部维护着一个 `ConnectionState`（如 `READING`, `WRITING`, `CLOSED`）。它会根据 `IHandler`, `ISource`, `ISinker` 返回的状态和结果，来决定如何转换自己的状态，并向上层的事件循环报告自己接下来感兴趣的事件（读或写）。
+
 ____
 
 ## 辅助模块
@@ -88,6 +119,9 @@ ____
 - **应用错误测试**: 验证当提供无效输入（如非法 IP 地址）时，函数能返回我们自定义的、正确的 `ErrorCode`。
 - **系统状态测试**: 验证在非阻塞模式下，当没有连接到来时，`accept()` 能立即返回并附带一个可被识别为 `EAGAIN` 的 `std::error_code`。
 
+### 测试 `core/Connection` 模块
+
+我们使用 **GoogleMock** 为 `IHandler`, `ISource`, `ISinker` 创建了模拟对象 (Mock Objects)。这使得我们可以**在完全不涉及真实网络 I/O 的情况下**，对 `Connection` 的状态机逻辑进行全面、独立的单元测试。测试用例覆盖了从正常的读写循环，到部分写入、提前关闭、协议错误和 I/O 错误等所有关键路径，确保了核心逻辑的健壮性。
 ___
 
 ## 开发工作流
