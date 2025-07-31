@@ -12,6 +12,7 @@ target_include_directories(tcp_lib PUBLIC
 target_link_libraries(tcp_lib
     PUBLIC
     common_lib
+    io_lib
     PRIVATE
     logger
     utils_lib

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "IResponse.hpp"
+#include "ISinker.hpp"
 #include "Status.hpp"
+#include <expected>
 #include <memory>
 #include <string_view>
 
@@ -23,13 +24,16 @@ public:
      * @param data 新接收到的数据的一个视图。
      */
     virtual void onData(std::string_view data) = 0;
+    virtual void onReadEOF() = 0;
 
     /**
-     * @brief 当 Connection 准备好发送数据时，调用此方法来获取一个待发送的响应。
-     * @return 如果一个完整的响应已经准备好，则返回一个包含 IResponse 的智能指针。
-     *         如果协议还在等待更多数据或处理中，则返回 nullptr。
+     * @brief 当 socket 变为可写时被调用。
+     * @param sinker 一个 I/O 执行器，Handler 可以用它来发送数据。
+     * @return 返回写入操作的结果，用于指导 Connection 的状态转换。
      */
-    [[nodiscard]] virtual auto produceResponse() -> ResponsePtr = 0;
+    virtual auto onWriteReady(ISinker& sinker)
+        -> std::expected<core::WriteStatus, std::error_code>
+        = 0;
 
     /**
      * @brief 返回协议处理器当前的状态。

@@ -33,6 +33,5 @@ private:
     std::unique_ptr<ISource> source_;
     std::unique_ptr<ISinker> sinker_;
     std::unique_ptr<protocol::IHandler> handler_;
-    ResponsePtr response_to_send_;
     std::vector<char> read_buffer_;
 };

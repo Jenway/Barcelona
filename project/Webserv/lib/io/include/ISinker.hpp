@@ -1,6 +1,5 @@
 #pragma once
 
-#include "IResponse.hpp"
 #include "Status.hpp"
 #include <expected>
 #include <system_error>
@@ -17,11 +16,20 @@ public:
     virtual ~ISinker() = default;
 
     /**
-     * @brief 尝试发送一个响应对象。
-     * @param response 一个指向待发送响应的 const 引用。
-     * @return 一个包含 SinkResult 的 expected，或者一个 error_code。
+     * @brief 写入一段在内存中的数据。
      */
-    virtual auto send(const IResponse& response) -> std::expected<core::WriteStatus, std::error_code> = 0;
+    virtual auto write(const char* data, size_t len)
+        -> std::expected<core::WriteStatus, std::error_code>
+        = 0;
+
+    /**
+     * @brief 使用零拷贝技术发送一个文件。
+     */
+    virtual auto sendfile(int in_fd, size_t count)
+        -> std::expected<core::WriteStatus, std::error_code>
+        = 0;
+
+    // 可以在这里添加其他 I/O 原语，比如 writev (for scatter-gather I/O)
 
 protected:
     ISinker() = default;

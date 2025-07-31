@@ -35,6 +35,7 @@ auto Connection::onReadable() -> std::expected<void, std::error_code>
         handler_->onData(std::string_view(read_buffer_.data(), bytes_read));
         break;
     case core::ReadStatus::Eof:
+        handler_->onReadEOF();
         state_ = core::ConnectionState::CLOSED;
         break;
     case core::ReadStatus::WouldBlock:
@@ -47,37 +48,22 @@ auto Connection::onReadable() -> std::expected<void, std::error_code>
 }
 auto Connection::onWritable() -> std::expected<void, std::error_code>
 {
-    if (!response_to_send_) {
-        LOG_WARN("onWritable called but no response to send for fd {}", socket_.getFd());
-        // 这种情况下，通常我们应该重新对读事件感兴趣
-        state_ = core::ConnectionState::READING;
+    auto write_result = handler_->onWriteReady(*sinker_);
+
+    if (!write_result) {
+        state_ = core::ConnectionState::CLOSED;
+        return std::unexpected(write_result.error());
+    }
+
+    auto write_status = *write_result;
+
+    if (write_status == core::WriteStatus::Continue) {
+        // 如果只写了一部分，则保持 WRITING 状态，等待下一次 onWritable
+        state_ = core::ConnectionState::WRITING;
         return {};
     }
 
-    // 将响应交给 Sinker 去发送
-    auto sink_result = sinker_->send(*response_to_send_);
-    if (!sink_result) {
-        state_ = core::ConnectionState::CLOSED; // Sinker 发生错误，关闭连接
-        return std::unexpected(sink_result.error());
-    }
-
-    // 根据 Sinker 的发送结果来决定下一步
-    switch (*sink_result) {
-    case core::WriteStatus::Finished:
-        // 响应已完全发送，清空待发送的响应
-        response_to_send_.reset();
-        break;
-    case core::WriteStatus::Continue:
-        // 响应只发送了一部分，保持 WRITING 状态，等待下一次 onWritable
-        state_ = core::ConnectionState::WRITING;
-        return {}; // 保持 WRITING 状态
-    case core::WriteStatus::Error:
-        // 不应该走到这里，因为错误会通过 expected 返回
-        state_ = core::ConnectionState::CLOSED;
-        return std::unexpected(make_error_code(ErrorCode::Unknown));
-    }
-
-    // 如果发送完成，更新状态机
+    // 如果是 WriteStatus::Finished，则继续向下执行 updateStateFromProtocol
     updateStateFromProtocol();
     return {};
 }
@@ -95,19 +81,8 @@ void Connection::updateStateFromProtocol()
         break;
 
     case core::protocol::Status::WantWrite:
-        // 协议说它想写了，我们就去问它要“响应”
-        response_to_send_ = handler_->produceResponse();
-        if (response_to_send_) {
-            // 如果成功拿到了响应，我们就切换到 WRITING 状态
-            state_ = core::ConnectionState::WRITING;
-        } else {
-            // 如果拿不到响应（可能协议还在处理中），我们继续保持 READING 状态
-            state_ = core::ConnectionState::READING;
-            LOG_DEBUG("Protocol wants to write, but no response produced yet for fd {}",
-                socket_.getFd());
-        }
+        state_ = core::ConnectionState::WRITING;
         break;
-
     case core::protocol::Status::Finished:
         LOG_TRACE("Protocol finished on fd {}. Closing connection.", socket_.getFd());
         state_ = core::ConnectionState::CLOSED; // 协议完成，直接关闭
