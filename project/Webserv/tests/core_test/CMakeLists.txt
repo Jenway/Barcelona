@@ -3,6 +3,7 @@
 add_executable(core_test
     connection_test.cc
     poller_test.cc
+    channel_test.cc
 )
 
 target_link_libraries(core_test PRIVATE

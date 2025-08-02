@@ -2,6 +2,8 @@
 
 add_library(core_lib
     src/Connection.cc
+    src/Poller.cc
+    src/EventLoop.cc
 )
 
 target_include_directories(core_lib PUBLIC
