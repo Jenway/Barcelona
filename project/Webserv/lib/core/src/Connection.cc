@@ -4,7 +4,9 @@
 #include "Status.hpp"
 #include "logger.hpp"
 #include <csignal>
+#include <magic_enum/magic_enum.hpp>
 #include <poll.h>
+#include <sys/epoll.h>
 #include <system_error>
 
 constexpr size_t READ_BUFFER_SIZE = 8192;
@@ -27,6 +29,8 @@ Connection::Connection(Socket socket, std::unique_ptr<protocol::IHandler> handle
 
 auto Connection::onReadable() -> std::expected<void, std::system_error>
 {
+    LOG_TRACE("fd={}: onReadable called.", socket_.getFd());
+
     auto read_result = source_->read(read_buffer_);
     if (!read_result) {
         state_ = State::CLOSED;
@@ -52,6 +56,8 @@ auto Connection::onReadable() -> std::expected<void, std::system_error>
 }
 auto Connection::onWritable() -> std::expected<void, std::system_error>
 {
+    LOG_TRACE("fd={}: onWritable called.", socket_.getFd());
+
     auto write_result = handler_->onWriteReady(*sinker_);
 
     if (!write_result) {
@@ -79,6 +85,7 @@ void Connection::updateStateFromProtocol()
     if ((state_ == State::CLOSING || state_ == State::CLOSED)) {
         return;
     }
+    auto old_state = state_;
 
     switch (handler_->getStatus()) {
     case ProtoStatus::WantRead:
@@ -98,15 +105,19 @@ void Connection::updateStateFromProtocol()
         state_ = State::CLOSED; // 协议出错，立即终止
         break;
     }
+    if (old_state != state_) {
+        LOG_DEBUG("fd={}: State changed from {} to {}", socket_.getFd(),
+            magic_enum::enum_name(old_state), magic_enum::enum_name(state_));
+    }
 }
 
 auto Connection::interestedEvents() const -> uint8_t
 {
     switch (state_) {
     case State::READING:
-        return POLL_IN;
+        return EPOLLIN;
     case State::WRITING:
-        return POLL_OUT;
+        return EPOLLOUT;
     case State::CLOSING:
     case State::CLOSED:
     default:

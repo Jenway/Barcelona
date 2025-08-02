@@ -195,7 +195,13 @@ struct fmt::formatter<std::system_error> {
     template <typename FormatContext>
     auto format(const std::system_error& se, FormatContext& ctx) const -> FormatContext::iterator
     {
-        return fmt::format_to(ctx.out(), "{} (code: {})", se.what(), se.code());
+        return fmt::format_to(ctx.out(),
+            "\n" // 换行开始
+            "        - What: {}\n"
+            "        - Code: {} ({})",
+            se.what(),
+            se.code().value(),
+            se.code().category().name());
     }
 };
 

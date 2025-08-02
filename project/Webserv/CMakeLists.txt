@@ -22,6 +22,9 @@ add_subdirectory(lib/core)
 
 add_subdirectory(tests)
 
-add_executable(${PROJECT_NAME} src/main.cc)
+add_executable(${PROJECT_NAME}
+    src/main.cc
+    src/server.cc
+)
 target_link_libraries(${PROJECT_NAME} PRIVATE core_lib tcp_lib logger)
 target_precompile_headers(${PROJECT_NAME} PRIVATE "lib/logger/include/logger.hpp")

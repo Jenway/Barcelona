@@ -37,20 +37,21 @@ std::expected<void, std::system_error> Poller::removeFd(int fd)
     return {};
 }
 
-std::expected<void, std::system_error> Poller::registerCallback(int fd, uint32_t eventMask, std::function<void()> cb)
+std::expected<void, std::system_error> Poller::updateEvents(int fd, uint32_t events)
 {
-    callbacks_[fd][eventMask] = std::move(cb);
-
     epoll_event ev {};
-    ev.events = 0;
-    for (const auto& [mask, _] : callbacks_[fd]) {
-        ev.events |= mask;
-    }
+    ev.events = events;
     ev.data.fd = fd;
 
     if (epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &ev) < 0) {
-        return error::to_unexpected("epoll_ctl(MOD)");
+        return error::to_unexpected("epoll_ctl(MOD) on updateEvents");
     }
+    return {};
+}
+
+std::expected<void, std::system_error> Poller::registerCallback(int fd, uint32_t eventMask, std::function<void()> cb)
+{
+    callbacks_[fd][eventMask] = std::move(cb);
 
     return {};
 }
@@ -62,6 +63,9 @@ std::expected<void, std::system_error> Poller::pollOnce(int timeoutMs)
 
     int n = epoll_wait(epollFd_, events, MAX_EVENTS, timeoutMs);
     if (n < 0) {
+        if (errno == EINTR) {
+            return {};
+        }
         return error::to_unexpected("epoll_wait");
     }
 

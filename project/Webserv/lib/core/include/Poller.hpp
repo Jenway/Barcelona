@@ -12,6 +12,8 @@ public:
 
     auto addFd(int fd) const -> std::expected<void, std::system_error>;
     auto removeFd(int fd) -> std::expected<void, std::system_error>;
+    auto updateEvents(int fd, uint32_t events) -> std::expected<void, std::system_error>;
+
     auto registerCallback(int fd, uint32_t eventMask, std::function<void()> cb) -> std::expected<void, std::system_error>;
 
     auto pollOnce(int timeoutMs = -1) -> std::expected<void, std::system_error>;

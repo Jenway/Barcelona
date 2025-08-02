@@ -10,7 +10,8 @@ echo "Using VCPKG toolchain file: $VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
 
 cmake -S . -B build \
     -G "Ninja" \
-    -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+    -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+    -DCMAKE_BUILD_TYPE=Debug
 
 cmake --build build
 

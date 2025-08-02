@@ -36,6 +36,6 @@ auto make_connection(Socket&& socket, std::unique_ptr<protocol::IHandler> handle
     return std::make_unique<Connection>(
         std::move(socket),
         std::move(handler),
-        std::move(sinker),
-        std::move(source));
+        std::move(source),
+        std::move(sinker));
 }

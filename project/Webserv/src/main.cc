@@ -1,34 +1,34 @@
-// src/main.cc
+// in main.cc
 
+#include "Server.hpp"
 #include "logger.hpp"
-#include <cerrno>
-#include <string>
-
-#include <system_error>
 #include <unistd.h>
-
-void process_data(const std::string& data)
-{
-    LOG_TRACE("Entering function process_data with data: '{}'", data);
-    if (data.empty()) {
-        LOG_WARN("Processing empty data string.");
-    }
-    int user_id = 123;
-    LOG_INFO("Processing data for user_id: {}", user_id);
-    errno = EACCES;
-    LOG_ERROR("Failed to open resource: {}", std::error_code(EACCES, std::generic_category()));
-}
 
 int main()
 {
-    if (!isatty(STDOUT_FILENO)) {
+    if (isatty(STDOUT_FILENO) == 0) {
         Logger::enableColor(false);
     }
-
     Logger::setRuntimeLogLevel(Logger::LogLevel::TRACE);
-    LOG_INFO("Application starting up.");
-    process_data("sample_payload");
-    LOG_INFO("Application finished.");
+
+    try {
+        Server server(8080); // 监听 8080 端口
+
+        LOG_INFO("Setting up server...");
+        server.setup();
+
+        LOG_INFO("Server starting to run on port 8080...");
+        server.run();
+
+        LOG_INFO("Server has shut down.");
+
+    } catch (const std::system_error& e) {
+        LOG_ERROR("A critical error occurred during server startup: {}", e);
+        return 1;
+    } catch (const std::exception& e) {
+        LOG_ERROR("An unexpected exception occurred: {}", e.what());
+        return 1;
+    }
 
     return 0;
 }
