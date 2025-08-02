@@ -16,7 +16,7 @@ using namespace ::testing;
 // Mock ISource，让我们可以完全控制读操作的结果
 class MockSource : public ISource {
 public:
-    MOCK_METHOD((std::expected<std::pair<core::ReadStatus, size_t>, std::error_code>), read,
+    MOCK_METHOD((std::expected<core::ReadResult, std::error_code>), read,
         (std::vector<char> & buffer), (override));
 };
 
@@ -66,7 +66,7 @@ TEST_F(ConnectionTest, FullCycleHappyPath)
 {
     // --- 阶段 1: 读 ---
     EXPECT_CALL(*source_ptr_, read(_))
-        .WillOnce(Return(std::make_pair(core::ReadStatus::GotData, 4)));
+        .WillOnce(Return(core::ReadResult { .status = core::ReadResult::Status::GotData, .bytes_read = 4 }));
     EXPECT_CALL(*handler_ptr_, onData(_));
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::WantWrite));
 
@@ -92,7 +92,7 @@ TEST_F(ConnectionTest, FullCycleHappyPath)
 TEST_F(ConnectionTest, PartialWrite)
 {
     // 初始设置，让 Connection 进入 WRITING 状态
-    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(std::make_pair(core::ReadStatus::GotData, 4)));
+    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(core::ReadResult { .status = core::ReadResult::Status::GotData, .bytes_read = 4 }));
     EXPECT_CALL(*handler_ptr_, onData(_));
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::WantWrite));
     connection_.onReadable();
@@ -125,7 +125,7 @@ TEST_F(ConnectionTest, PartialWrite)
 TEST_F(ConnectionTest, HandleEofOnRead)
 {
     // 模拟 Source 返回 EOF
-    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(std::make_pair(core::ReadStatus::Eof, 0)));
+    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(core::ReadResult { .status = core::ReadResult::Status::Eof, .bytes_read = 0 }));
     // 期望 Connection 在收到 EOF 时，会通知 Handler
     EXPECT_CALL(*handler_ptr_, onReadEOF());
 
@@ -139,7 +139,7 @@ TEST_F(ConnectionTest, ProtocolHandlerReturnsError)
 {
     // 阶段 1: 正常读取
     EXPECT_CALL(*source_ptr_, read(_))
-        .WillOnce(Return(std::make_pair(core::ReadStatus::GotData, 10)));
+        .WillOnce(Return(core::ReadResult { .status = core::ReadResult::Status::GotData, .bytes_read = 10 }));
     EXPECT_CALL(*handler_ptr_, onData(_));
 
     // 阶段 2: 处理完数据后，协议处理器报告内部错误
@@ -157,7 +157,7 @@ TEST_F(ConnectionTest, ProtocolHandlerReturnsError)
 TEST_F(ConnectionTest, SinkerReturnsIoError)
 {
     // 设置进入 WRITING 状态
-    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(std::make_pair(core::ReadStatus::GotData, 4)));
+    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(core::ReadResult { .status = core::ReadResult::Status::GotData, .bytes_read = 4 }));
     EXPECT_CALL(*handler_ptr_, onData(_));
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::WantWrite));
     connection_.onReadable();
@@ -169,7 +169,7 @@ TEST_F(ConnectionTest, SinkerReturnsIoError)
 
     auto result = connection_.onWritable();
     ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error(), broken_pipe);
+    EXPECT_EQ(result.error().code(), broken_pipe);
     EXPECT_TRUE(connection_.isClosed());
 }
 
@@ -181,7 +181,7 @@ TEST_F(ConnectionTest, SourceReturnsIoError)
 
     auto result = connection_.onReadable();
     ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error(), permission_denied);
+    EXPECT_EQ(result.error().code(), permission_denied);
     EXPECT_TRUE(connection_.isClosed());
 }
 
@@ -189,7 +189,7 @@ TEST_F(ConnectionTest, SourceReturnsIoError)
 TEST_F(ConnectionTest, HandlerReturnsIoErrorOnWrite)
 {
     // 进入 WRITING 状态
-    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(std::make_pair(core::ReadStatus::GotData, 4)));
+    EXPECT_CALL(*source_ptr_, read(_)).WillOnce(Return(core::ReadResult { .status = core::ReadResult::Status::GotData, .bytes_read = 4 }));
     EXPECT_CALL(*handler_ptr_, onData(_));
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::WantWrite));
     connection_.onReadable();
@@ -199,6 +199,6 @@ TEST_F(ConnectionTest, HandlerReturnsIoErrorOnWrite)
 
     auto result = connection_.onWritable();
     ASSERT_FALSE(result.has_value());
-    EXPECT_EQ(result.error(), broken_pipe);
+    EXPECT_EQ(result.error().code(), broken_pipe);
     EXPECT_TRUE(connection_.isClosed());
 }

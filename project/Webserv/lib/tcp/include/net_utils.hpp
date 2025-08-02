@@ -1,5 +1,5 @@
 #pragma once
-#include "ErrorCode.hpp"
+#include "Error.hpp"
 #include "fd_utils.hpp"
 #include <expected>
 #include <fcntl.h>
@@ -17,7 +17,7 @@ inline auto accept_nonblock_cloexec(int listen_fd) -> std::expected<int, std::er
 {
     int client_fd = ::accept(listen_fd, nullptr, nullptr);
     if (client_fd == -1) {
-        return std::unexpected(make_system_error());
+        return error::to_unexpected_code();
     }
 
     if (auto res = utils::fd::set_non_blocking(client_fd); !res) {
@@ -38,7 +38,7 @@ inline auto sendfile(int out_fd, int in_fd, off_t* offset, size_t count)
     ssize_t bytes_sent = ::sendfile(out_fd, in_fd, offset, count);
 
     if (bytes_sent == -1) {
-        return std::unexpected(make_system_error());
+        return error::to_unexpected_code();
     }
 
     return bytes_sent;

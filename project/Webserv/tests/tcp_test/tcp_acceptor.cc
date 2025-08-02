@@ -17,7 +17,7 @@ protected:
         // 使用端口 0，让操作系统为我们选择一个可用的临时端口
         auto acceptor_result = Acceptor::create("127.0.0.1", 0);
         // 如果 Acceptor 创建失败，测试将直接失败
-        ASSERT_TRUE(acceptor_result.has_value()) << "Failed to create Acceptor: " << acceptor_result.error().message();
+        ASSERT_TRUE(acceptor_result.has_value()) << "Failed to create Acceptor: " << acceptor_result.error().what();
         acceptor_ = std::make_unique<Acceptor>(std::move(*acceptor_result));
 
         // 获取 Acceptor 实际监听的端口，以便客户端可以连接

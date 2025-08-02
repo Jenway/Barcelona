@@ -15,9 +15,9 @@ public:
     Connection(Socket socket, std::unique_ptr<protocol::IHandler> handler,
         std::unique_ptr<ISource> source, std::unique_ptr<ISinker> sinker);
 
-    auto onReadable() -> std::expected<void, std::error_code>;
+    auto onReadable() -> std::expected<void, std::system_error>;
 
-    auto onWritable() -> std::expected<void, std::error_code>;
+    auto onWritable() -> std::expected<void, std::system_error>;
     [[nodiscard]] auto isClosed() const -> bool { return state_ == core::ConnectionState::CLOSED; }
 
     [[nodiscard]] auto interestedEvents() const -> uint8_t;

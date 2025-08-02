@@ -30,7 +30,7 @@ TEST(TcpComponentsTest, AcceptorLifecycle)
     constexpr uint16_t port = 8081;
 
     auto acceptor_result = Acceptor::create(ip, port);
-    ASSERT_TRUE(acceptor_result.has_value()) << "Failed to create acceptor: " << acceptor_result.error().message();
+    ASSERT_TRUE(acceptor_result.has_value()) << "Failed to create acceptor: " << acceptor_result.error().what();
     Acceptor acceptor = std::move(*acceptor_result);
 
     std::thread client_thread;
@@ -80,7 +80,7 @@ TEST(TcpComponentsTest, InvalidAddressError)
     ASSERT_FALSE(acceptor_result.has_value());
 
     // 断言返回的错误是我们自定义的、类型安全的 Net_InvalidAddress！
-    EXPECT_EQ(acceptor_result.error(), ErrorCode::Net_InvalidAddress);
+    EXPECT_EQ(acceptor_result.error().code(), ErrorCode::Net_InvalidAddress);
 }
 
 // 测试 3: 验证非阻塞 accept 在没有连接时的行为

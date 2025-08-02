@@ -1,5 +1,6 @@
 #include "Acceptor.hpp"
 #include "logger.hpp"
+#include <expected>
 #include <system_error>
 
 Acceptor::Acceptor(Socket listen_socket)
@@ -7,7 +8,7 @@ Acceptor::Acceptor(Socket listen_socket)
 {
 }
 
-auto Acceptor::create(const char* ip, uint16_t port) -> std::expected<Acceptor, std::error_code>
+auto Acceptor::create(const char* ip, uint16_t port) -> std::expected<Acceptor, std::system_error>
 {
     auto socket_result = Socket::create();
     if (!socket_result) {

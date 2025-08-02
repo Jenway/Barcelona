@@ -61,7 +61,7 @@ TEST(TcpIntegrationTest, FullPingPongCycle)
     const char* ip = "127.0.0.1";
     // 绑定端口 0，让 OS 自动选择一个可用端口
     auto acceptor_result = Acceptor::create(ip, 0);
-    ASSERT_TRUE(acceptor_result.has_value()) << "Acceptor::create failed: " << acceptor_result.error().message();
+    ASSERT_TRUE(acceptor_result.has_value()) << "Acceptor::create failed: " << acceptor_result.error().what();
     Acceptor acceptor = std::move(*acceptor_result);
 
     // 获取 OS 分配的实际端口
@@ -135,7 +135,7 @@ TEST(TcpIntegrationTest, FullPingPongCycle)
 
     // 6. 触发服务器端 onReadable，并加入重试逻辑
     //    这可以处理客户端 write() 和服务器端 read() 之间的时序问题
-    std::expected<void, std::error_code> read_res;
+    std::expected<void, std::system_error> read_res;
     bool read_success = false;
     for (int i = 0; i < 100; ++i) { // Retry up to 1 second
         read_res = connection.onReadable();

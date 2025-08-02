@@ -24,7 +24,7 @@ void Server::setup()
     });
 
     if (auto res = bind_to(*acceptorChannel_, poller_); !res) {
-        LOG_ERROR("Failed to bind AcceptorChannel: {}", res.error().what());
+        LOG_ERROR("Failed to bind AcceptorChannel: {}", res.error());
     }
 }
 
@@ -32,7 +32,7 @@ void Server::run()
 {
     while (_running) {
         if (auto res = poller_.pollOnce(1000); !res) {
-            LOG_ERROR("Poller error: {}", res.error().what());
+            LOG_ERROR("Poller error: {}", res.error());
             break;
         }
     }
@@ -59,7 +59,7 @@ void Server::onNewConnection(Socket&& socket)
     auto conn_result = make_connection<TcpSinker, TcpSource>(std::move(socket), std::move(handler));
 
     if (!conn_result) {
-        LOG_ERROR("Failed to create connection: {}", conn_result.error().what());
+        LOG_ERROR("Failed to create connection: {}", conn_result.error());
         return;
     }
 
@@ -77,7 +77,7 @@ void Server::onNewConnection(Socket&& socket)
     });
 
     if (auto res = bind_to(*ch, poller_); !res) {
-        LOG_ERROR("Failed to bind Channel: {}", res.error().what());
+        LOG_ERROR("Failed to bind Channel: {}", res.error());
         connections_.erase(clientFd);
         return;
     }

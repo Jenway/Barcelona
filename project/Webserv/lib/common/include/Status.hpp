@@ -23,20 +23,16 @@ enum class ConnectionState : uint8_t {
     CLOSED, ///< 连接已完全关闭。
 };
 
-/**
- * @enum ReadStatus
- * @brief 描述了从一个 ISource 读取操作的结果。
- */
-enum class ReadStatus : uint8_t {
-    GotData, ///< 成功读取到数据。
-    WouldBlock, ///< 当前无数据可读 (EAGAIN / EWOULDBLOCK)。
-    Eof, ///< 对端已关闭连接。
+struct ReadResult {
+    enum class Status : uint8_t {
+        GotData, ///< 成功读取到数据。
+        WouldBlock, ///< 当前无数据可读 (EAGAIN / EWOULDBLOCK)。
+        Eof, ///< 对端已关闭连接。
+    };
+    Status status;
+    std::size_t bytes_read;
 };
 
-/**
- * @enum WriteResult
- * @brief 描述了向一个 ISinker 写入操作的结果。
- */
 struct WriteResult {
     enum Status : uint8_t {
         Finished, ///< 响应已全部发送完毕。

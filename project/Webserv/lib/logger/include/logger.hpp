@@ -173,7 +173,7 @@ inline void enableColor(bool enable) { Logger::detail::s_enableColorOutput = ena
 
 template <>
 struct fmt::formatter<std::error_code> {
-    constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator
+    static constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator
     {
         return ctx.begin(); // no format specifiers supported for now
     }
@@ -186,8 +186,22 @@ struct fmt::formatter<std::error_code> {
 };
 
 template <>
+struct fmt::formatter<std::system_error> {
+    static constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator
+    {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const std::system_error& se, FormatContext& ctx) const -> FormatContext::iterator
+    {
+        return fmt::format_to(ctx.out(), "{} (code: {})", se.what(), se.code());
+    }
+};
+
+template <>
 struct fmt::formatter<std::thread::id> {
-    constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator
+    static constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator
     {
         return ctx.begin(); // no format specifiers supported for now
     }

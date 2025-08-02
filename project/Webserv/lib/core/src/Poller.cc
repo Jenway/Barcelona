@@ -1,6 +1,8 @@
 // lib/core/src/Poller.cc
 #include "Poller.hpp"
+#include "Error.hpp"
 
+#include <expected>
 #include <sys/epoll.h>
 #include <unistd.h>
 
@@ -20,7 +22,7 @@ std::expected<void, std::system_error> Poller::addFd(int fd) const
     ev.data.fd = fd;
 
     if (epoll_ctl(epollFd_, EPOLL_CTL_ADD, fd, &ev) < 0) {
-        return std::unexpected(std::system_error(errno, std::system_category(), "epoll_ctl(ADD)"));
+        return error::to_unexpected("epoll_ctl(ADD)");
     }
 
     return {};
@@ -29,7 +31,7 @@ std::expected<void, std::system_error> Poller::addFd(int fd) const
 std::expected<void, std::system_error> Poller::removeFd(int fd)
 {
     if (epoll_ctl(epollFd_, EPOLL_CTL_DEL, fd, nullptr) < 0) {
-        return std::unexpected(std::system_error(errno, std::system_category(), "epoll_ctl(DEL)"));
+        return error::to_unexpected("epoll_ctl(DEL)");
     }
     callbacks_.erase(fd);
     return {};
@@ -47,7 +49,7 @@ std::expected<void, std::system_error> Poller::registerCallback(int fd, uint32_t
     ev.data.fd = fd;
 
     if (epoll_ctl(epollFd_, EPOLL_CTL_MOD, fd, &ev) < 0) {
-        return std::unexpected(std::system_error(errno, std::system_category(), "epoll_ctl(MOD)"));
+        return error::to_unexpected("epoll_ctl(MOD)");
     }
 
     return {};
@@ -60,7 +62,7 @@ std::expected<void, std::system_error> Poller::pollOnce(int timeoutMs)
 
     int n = epoll_wait(epollFd_, events, MAX_EVENTS, timeoutMs);
     if (n < 0) {
-        return std::unexpected(std::system_error(errno, std::system_category(), "epoll_wait"));
+        return error::to_unexpected("epoll_wait");
     }
 
     for (int i = 0; i < n; ++i) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <expected>
 #include <magic_enum/magic_enum.hpp>
 #include <string>
 #include <system_error>
@@ -43,13 +44,14 @@ inline std::error_code make_error_code(ErrorCode e) noexcept
 {
     return { static_cast<int>(e), get_web_server_category() };
 }
-inline std::error_code make_system_error()
-{
-    return { errno, std::generic_category() };
-}
 
 // 告诉 C++ 标准库，我们的 ErrorCode 可以被当作 error_code 使用
 namespace std {
 template <>
 struct is_error_code_enum<ErrorCode> : true_type { };
 } // namespace std
+
+inline std::error_code make_system_error_code()
+{
+    return { errno, std::generic_category() };
+}

@@ -40,7 +40,6 @@ public:
      */
     [[nodiscard]] virtual auto getStatus() const -> core::protocol::Status = 0;
 
-protected:
     IHandler() = default;
     IHandler(const IHandler&) = delete;
     auto operator=(const IHandler&) -> IHandler& = delete;

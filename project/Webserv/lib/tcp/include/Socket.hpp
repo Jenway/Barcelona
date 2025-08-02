@@ -21,9 +21,9 @@ public:
         }
         return *this;
     }
-    static auto create() -> std::expected<Socket, std::error_code>;
-    auto bind(const char* ip, uint16_t port) -> std::expected<void, std::error_code>;
-    auto listen(int backlog = 128) -> std::expected<void, std::error_code>;
+    static auto create() -> std::expected<Socket, std::system_error>;
+    auto bind(const char* ip, uint16_t port) -> std::expected<void, std::system_error>;
+    auto listen(int backlog = 128) -> std::expected<void, std::system_error>;
     auto accept() -> std::expected<Socket, std::error_code>;
 
     void setReuseAddr(bool on);

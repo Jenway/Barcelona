@@ -1,15 +1,22 @@
 #include "Connection.hpp"
+#include "Error.hpp"
 #include "ISinker.hpp"
 #include "Status.hpp"
 #include "logger.hpp"
 #include <csignal>
 #include <poll.h>
+#include <system_error>
 
 constexpr size_t READ_BUFFER_SIZE = 8192;
 
+using State = core::ConnectionState;
+using ReadStatus = core::ReadResult::Status;
+using WriteStatus = core::WriteResult::Status;
+using ProtoStatus = core::protocol::Status;
+
 Connection::Connection(Socket socket, std::unique_ptr<protocol::IHandler> handler,
     std::unique_ptr<ISource> source, std::unique_ptr<ISinker> sinker)
-    : state_(core::ConnectionState::READING)
+    : state_(State::READING)
     , socket_(std::move(socket))
     , source_(std::move(source))
     , sinker_(std::move(sinker))
@@ -18,51 +25,50 @@ Connection::Connection(Socket socket, std::unique_ptr<protocol::IHandler> handle
     read_buffer_.resize(READ_BUFFER_SIZE);
 }
 
-auto Connection::onReadable() -> std::expected<void, std::error_code>
+auto Connection::onReadable() -> std::expected<void, std::system_error>
 {
-    // 将 I/O 操作完全委托给 Source
     auto read_result = source_->read(read_buffer_);
     if (!read_result) {
-        state_ = core::ConnectionState::CLOSED;
-        return std::unexpected(read_result.error());
+        state_ = State::CLOSED;
+        return error::to_unexpected(read_result.error(), "source read failed");
     }
 
     auto [status, bytes_read] = *read_result;
 
     switch (status) {
-    case core::ReadStatus::GotData:
+    case ReadStatus::GotData:
         handler_->onData(std::string_view(read_buffer_.data(), bytes_read));
         break;
-    case core::ReadStatus::Eof:
+    case ReadStatus::Eof:
         handler_->onReadEOF();
-        state_ = core::ConnectionState::CLOSED;
+        state_ = State::CLOSED;
         break;
-    case core::ReadStatus::WouldBlock:
-        // 什么都不做，继续等待下一次 onReadable
+    case ReadStatus::WouldBlock:
         return {};
     }
 
     updateStateFromProtocol();
     return {};
 }
-auto Connection::onWritable() -> std::expected<void, std::error_code>
+auto Connection::onWritable() -> std::expected<void, std::system_error>
 {
-    auto write_result_opt = handler_->onWriteReady(*sinker_);
+    auto write_result = handler_->onWriteReady(*sinker_);
 
-    if (!write_result_opt) {
-        state_ = core::ConnectionState::CLOSED;
-        return std::unexpected(write_result_opt.error());
+    if (!write_result) {
+        state_ = State::CLOSED;
+        return error::to_unexpected(write_result.error(), "Hanlder write failed");
     }
 
-    auto write_result = *write_result_opt;
+    auto [status, bytes_write] = *write_result;
 
-    if (write_result.status == core::WriteResult::Status::Continue) {
-        // 如果只写了一部分，则保持 WRITING 状态，等待下一次 onWritable
-        state_ = core::ConnectionState::WRITING;
+    switch (status) {
+    case core::WriteResult::Continue:
+        state_ = State::WRITING;
         return {};
+    case core::WriteResult::Finished:
+        break;
     }
 
-    // 如果是 WriteStatus::Finished，则继续向下执行 updateStateFromProtocol
     updateStateFromProtocol();
     return {};
 }
@@ -70,26 +76,26 @@ auto Connection::onWritable() -> std::expected<void, std::error_code>
 void Connection::updateStateFromProtocol()
 {
     // 如果连接已经处于关闭流程中，则不再更新状态
-    if ((state_ == core::ConnectionState::CLOSING || state_ == core::ConnectionState::CLOSED)) {
+    if ((state_ == State::CLOSING || state_ == State::CLOSED)) {
         return;
     }
 
     switch (handler_->getStatus()) {
-    case core::protocol::Status::WantRead:
-        state_ = core::ConnectionState::READING;
+    case ProtoStatus::WantRead:
+        state_ = State::READING;
         break;
 
-    case core::protocol::Status::WantWrite:
-        state_ = core::ConnectionState::WRITING;
+    case ProtoStatus::WantWrite:
+        state_ = State::WRITING;
         break;
-    case core::protocol::Status::Finished:
+    case ProtoStatus::Finished:
         LOG_TRACE("Protocol finished on fd {}. Closing connection.", socket_.getFd());
-        state_ = core::ConnectionState::CLOSED; // 协议完成，直接关闭
+        state_ = State::CLOSED; // 协议完成，直接关闭
         break;
 
-    case core::protocol::Status::Error:
+    case ProtoStatus::Error:
         LOG_WARN("Protocol error on fd {}. Closing connection.", socket_.getFd());
-        state_ = core::ConnectionState::CLOSED; // 协议出错，立即终止
+        state_ = State::CLOSED; // 协议出错，立即终止
         break;
     }
 }
@@ -97,12 +103,12 @@ void Connection::updateStateFromProtocol()
 auto Connection::interestedEvents() const -> uint8_t
 {
     switch (state_) {
-    case core::ConnectionState::READING:
+    case State::READING:
         return POLL_IN;
-    case core::ConnectionState::WRITING:
+    case State::WRITING:
         return POLL_OUT;
-    case core::ConnectionState::CLOSING:
-    case core::ConnectionState::CLOSED:
+    case State::CLOSING:
+    case State::CLOSED:
     default:
         return 0; // 不再对任何事件感兴趣
     }
