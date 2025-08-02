@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ISinker.hpp"
-#include "Socket.hpp"
 #include "Status.hpp"
 
 /**
@@ -13,7 +12,14 @@
  */
 class TcpSinker : public ISinker {
 public:
-    explicit TcpSinker(Socket& socket);
+    TcpSinker() = default;
+    ~TcpSinker() = default;
+    TcpSinker(const TcpSinker&) = delete;
+    auto operator=(const TcpSinker&) -> TcpSinker& = delete;
+    TcpSinker(TcpSinker&&) = delete;
+    auto operator=(TcpSinker&&) -> TcpSinker& = delete;
+
+    void setFd(int fd) { this->fd_ = fd; }
 
     auto write(const char* data, size_t len)
         -> std::expected<core::WriteResult, std::error_code> override;
@@ -21,11 +27,6 @@ public:
     auto sendfile(int in_fd, off_t& offset, size_t count)
         -> std::expected<core::WriteResult, std::error_code> override;
 
-    TcpSinker(const TcpSinker&) = delete;
-    auto operator=(const TcpSinker&) -> TcpSinker& = delete;
-    TcpSinker(TcpSinker&&) = delete;
-    auto operator=(TcpSinker&&) -> TcpSinker& = delete;
-
 private:
-    Socket& socket_;
+    int fd_ = -1;
 };

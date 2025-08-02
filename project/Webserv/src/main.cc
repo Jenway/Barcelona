@@ -16,7 +16,7 @@ void process_data(const std::string& data)
     int user_id = 123;
     LOG_INFO("Processing data for user_id: {}", user_id);
     errno = EACCES;
-    LOG_ERROR("Failed to open resource: {}", std::error_code(EACCES, std::generic_category()).message());
+    LOG_ERROR("Failed to open resource: {}", std::error_code(EACCES, std::generic_category()));
 }
 
 int main()

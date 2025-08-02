@@ -10,6 +10,8 @@ enum class ErrorCode : uint8_t {
     Unknown,
     // NET
     Net_InvalidAddress,
+    // FdNotSet
+    Fd_NotSet,
     // CONFIG
     Config_FileNotFound,
     Config_ParseError,

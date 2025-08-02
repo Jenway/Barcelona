@@ -2,21 +2,20 @@
 #include "ErrorCode.hpp"
 #include "Status.hpp"
 #include "net_utils.hpp" // 为了可移植的 sendfile
+#include <expected>
 #include <unistd.h> // For write()
-
-TcpSinker::TcpSinker(Socket& socket)
-    : socket_(socket)
-{
-}
 
 auto TcpSinker::write(const char* data, size_t len)
     -> std::expected<core::WriteResult, std::error_code>
 {
+    if (fd_ == -1) {
+        return std::unexpected(ErrorCode::Fd_NotSet);
+    }
     if (len == 0) {
         return core::WriteResult { .status = core::WriteResult::Status::Finished, .bytes_sent = 0 };
     }
 
-    ssize_t bytes_sent = ::write(socket_.getFd(), data, len);
+    ssize_t bytes_sent = ::write(fd_, data, len);
 
     if (bytes_sent == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -38,14 +37,17 @@ auto TcpSinker::write(const char* data, size_t len)
 auto TcpSinker::sendfile(int in_fd, off_t& offset, size_t count)
     -> std::expected<core::WriteResult, std::error_code>
 {
+    if (fd_ == -1) {
+        return std::unexpected(ErrorCode::Fd_NotSet);
+    }
     if (count == 0) {
         return core::WriteResult { .status = core::WriteResult::Status::Finished, .bytes_sent = 0 };
     }
 
     // 将 offset 的地址传给底层的 sendfile
-    ssize_t bytes_sent = ::sendfile(socket_.getFd(), in_fd, &offset, count);
+    ssize_t bytes_sent = ::sendfile(fd_, in_fd, &offset, count);
 
-    auto result = net_utils::sendfile(socket_.getFd(), in_fd, nullptr, count);
+    auto result = net_utils::sendfile(fd_, in_fd, nullptr, count);
 
     if (!result) {
         const auto& err = result.error();

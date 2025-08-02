@@ -8,7 +8,19 @@ class Socket {
 public:
     Socket() = default;
     explicit Socket(int fd);
-
+    Socket(Socket&) = delete;
+    Socket& operator=(Socket&) = delete;
+    Socket(Socket&& rhs) noexcept
+        : sock_fd_(std::move(rhs.sock_fd_))
+    {
+    }
+    auto operator=(Socket&& rhs) noexcept -> Socket&
+    {
+        if (this != &rhs) {
+            sock_fd_ = std::move(rhs.sock_fd_);
+        }
+        return *this;
+    }
     static auto create() -> std::expected<Socket, std::error_code>;
     auto bind(const char* ip, uint16_t port) -> std::expected<void, std::error_code>;
     auto listen(int backlog = 128) -> std::expected<void, std::error_code>;

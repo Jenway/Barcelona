@@ -6,6 +6,7 @@
 #include <source_location>
 #include <string>
 #include <system_error>
+#include <thread>
 #include <utility>
 
 #include <fmt/chrono.h>
@@ -169,3 +170,31 @@ inline void enableColor(bool enable) { Logger::detail::s_enableColorOutput = ena
 #define LOG_ERROR(fmt_str, ...) \
     Logger::detail::log_core<Logger::LogLevel::ERROR>(std::source_location::current(), FMT_STRING(fmt_str), ##__VA_ARGS__)
 // NOLINTEND(cppcoreguidelines-macro-usage)
+
+template <>
+struct fmt::formatter<std::error_code> {
+    constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator
+    {
+        return ctx.begin(); // no format specifiers supported for now
+    }
+
+    template <typename FormatContext>
+    auto format(const std::error_code& ec, FormatContext& ctx) const -> FormatContext::iterator
+    {
+        return fmt::format_to(ctx.out(), "[{}: {}]", ec.category().name(), ec.message());
+    }
+};
+
+template <>
+struct fmt::formatter<std::thread::id> {
+    constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator
+    {
+        return ctx.begin(); // no format specifiers supported for now
+    }
+
+    template <typename FormatContext>
+    auto format(const std::thread::id& id, FormatContext& ctx) const -> FormatContext::iterator
+    {
+        return fmt::format_to(ctx.out(), "{}", id);
+    }
+};

@@ -1,6 +1,5 @@
 #pragma once
 #include "ISource.hpp"
-#include "Socket.hpp"
 
 /**
  * @class TcpSource
@@ -9,16 +8,18 @@
  */
 class TcpSource : public ISource {
 public:
-    explicit TcpSource(Socket& socket);
-
-    auto read(std::vector<char>& buffer)
-        -> std::expected<std::pair<core::ReadStatus, size_t>, std::error_code> override;
-
+    TcpSource() = default;
+    ~TcpSource() = default;
     TcpSource(const TcpSource&) = delete;
     auto operator=(const TcpSource&) -> TcpSource& = delete;
     TcpSource(TcpSource&&) = delete;
     auto operator=(TcpSource&&) -> TcpSource& = delete;
 
+    void setFd(int fd) { this->fd_ = fd; }
+
+    auto read(std::vector<char>& buffer)
+        -> std::expected<std::pair<core::ReadStatus, size_t>, std::error_code> override;
+
 private:
-    Socket& socket_;
+    int fd_ = -1;
 };

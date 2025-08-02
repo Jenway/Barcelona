@@ -46,7 +46,7 @@ class ConnectionTest : public Test {
 protected:
     // 我们用一个无效的 fd(-1) 来创建 Socket，因为测试中不会真的去读写它
     // 真正的 I/O 操作由 MockSource 和 MockSinker 模拟
-    std::unique_ptr<Socket> socket_ = std::make_unique<Socket>();
+    Socket socket_;
     std::unique_ptr<MockHandler> handler_ = std::make_unique<MockHandler>();
     std::unique_ptr<MockSource> source_ = std::make_unique<MockSource>();
     std::unique_ptr<MockSinker> sinker_ = std::make_unique<MockSinker>();

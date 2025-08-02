@@ -62,7 +62,7 @@ TEST(TcpComponentsTest, AcceptorLifecycle)
     // 如果第一次失败（因为时序问题），我们再试一次
     if (!client_result.has_value() && client_result.error() == std::errc::resource_unavailable_try_again) {
         std::this_thread::sleep_for(std::chrono::milliseconds(200)); // 等待更长的时间
-        client_result = acceptor.accept();
+        client_result = std::move(acceptor.accept());
     }
 
     ASSERT_TRUE(client_result.has_value()) << "Accept failed: " << client_result.error().message();

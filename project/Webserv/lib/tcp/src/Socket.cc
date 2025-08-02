@@ -63,7 +63,7 @@ void Socket::setReuseAddr(bool on)
 {
     int optval = on ? 1 : 0;
     if (::setsockopt(sock_fd_.get(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-        LOG_WARN("Failed to set SO_REUSEADDR: {}", make_system_error().message());
+        LOG_WARN("Failed to set SO_REUSEADDR: {}", make_system_error());
     }
 }
 auto Socket::getFd() const -> int { return sock_fd_.get(); }

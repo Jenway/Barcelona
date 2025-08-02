@@ -117,16 +117,16 @@ TEST(TcpIntegrationTest, FullPingPongCycle)
     Socket accepted_socket = server_socket_future.get(); // 得到一个栈上的 Socket
     server_thread.join();
 
-    auto server_socket_ptr = std::make_unique<Socket>(std::move(accepted_socket));
-
     // 4. 创建完整的服务器端 Connection
     auto handler = std::make_unique<MockIntegrationHandler>();
     auto handler_future = handler->data_promise.get_future();
 
-    auto source = std::make_unique<TcpSource>(*server_socket_ptr);
-    auto sinker = std::make_unique<TcpSinker>(*server_socket_ptr);
+    auto source = std::make_unique<TcpSource>();
+    auto sinker = std::make_unique<TcpSinker>();
+    source->setFd(accepted_socket.getFd());
+    sinker->setFd(accepted_socket.getFd());
 
-    Connection connection(std::move(server_socket_ptr), std::move(handler),
+    Connection connection(std::move(accepted_socket), std::move(handler),
         std::move(source), std::move(sinker));
 
     // 5. 客户端发送 "ping"

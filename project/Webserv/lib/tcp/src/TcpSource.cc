@@ -2,15 +2,13 @@
 #include "ErrorCode.hpp"
 #include <unistd.h> // For read()
 
-TcpSource::TcpSource(Socket& socket)
-    : socket_(socket)
-{
-}
-
 auto TcpSource::read(std::vector<char>& buffer)
     -> std::expected<std::pair<core::ReadStatus, size_t>, std::error_code>
 {
-    ssize_t bytes_read = ::read(socket_.getFd(), buffer.data(), buffer.size());
+    if (fd_ == -1) {
+        return std::unexpected(ErrorCode::Fd_NotSet);
+    }
+    ssize_t bytes_read = ::read(fd_, buffer.data(), buffer.size());
 
     if (bytes_read > 0) {
         return std::make_pair(core::ReadStatus::GotData, bytes_read);
