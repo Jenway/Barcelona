@@ -1,5 +1,6 @@
 #include "Acceptor.hpp"
 #include "logger.hpp"
+#include <system_error>
 
 Acceptor::Acceptor(Socket listen_socket)
     : listen_socket_(std::move(listen_socket))
@@ -32,3 +33,27 @@ auto Acceptor::create(const char* ip, uint16_t port) -> std::expected<Acceptor, 
 
 auto Acceptor::accept() -> std::expected<Socket, std::error_code> { return listen_socket_.accept(); }
 auto Acceptor::getFd() const -> int { return listen_socket_.getFd(); }
+
+void Acceptor::setAcceptHandler(AcceptHandler handler)
+{
+    acceptHandler_ = std::move(handler);
+}
+
+void Acceptor::onAccept()
+{
+    while (true) {
+        auto clientSocketResult = listen_socket_.accept();
+        if (clientSocketResult) {
+            if (acceptHandler_) {
+                acceptHandler_(std::move(*clientSocketResult));
+            }
+        } else {
+            const auto& err = clientSocketResult.error();
+            if (err == std::errc::resource_unavailable_try_again) {
+                break;
+            }
+            LOG_ERROR("Accept failed: {}", err.message());
+            break;
+        }
+    }
+}

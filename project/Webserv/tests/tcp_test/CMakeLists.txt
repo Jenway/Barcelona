@@ -1,16 +1,8 @@
 # in tests/tcp_test/CMakeLists.txt
 
-add_executable(tcp_acceptor_test tcp_test.cc)
-target_link_libraries(tcp_acceptor_test PRIVATE
-    tcp_lib
-    GTest::gtest
-    GTest::gtest_main
-)
-include(GoogleTest)
-gtest_discover_tests(tcp_acceptor_test)
+add_executable(tcp_test tcp_test.cc tcp_io_test.cc tcp_acceptor.cc)
 
-add_executable(tcp_io_test tcp_io_test.cc)
-target_link_libraries(tcp_io_test PRIVATE
+target_link_libraries(tcp_test PRIVATE
     tcp_lib
     core_lib
     GTest::gtest
@@ -18,8 +10,8 @@ target_link_libraries(tcp_io_test PRIVATE
     GTest::gtest_main
 )
 include(GoogleTest)
-target_include_directories(tcp_io_test
+target_include_directories(tcp_test
     PRIVATE
     core_lib
 )
-gtest_discover_tests(tcp_io_test)
+gtest_discover_tests(tcp_test)
