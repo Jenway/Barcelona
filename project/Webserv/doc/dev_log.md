@@ -44,21 +44,65 @@ ____
 
 这种设计实现了完美的关注点分离和单向依赖流 (`http` -> `core` -> `io` <- `tcp`)，使得每个组件都可以被独立地替换和测试。
 
+### 事件循环核心：`Poller` (I/O 事件分发器)
+
+为了驱动 `Connection` 的状态机并实现高并发处理，我们引入了一个专用的 I/O 事件轮询组件：`Poller`。它是整个服务器事件驱动模型的心脏，是连接底层操作系统通知和上层业务逻辑的桥梁。
+
+- **`epoll` 封装**: `Poller` 是对 Linux 高性能 `epoll` 机制的一个现代 C++ 封装。相较于传统的 `select` 或 `poll`，`epoll` 在处理大量并发连接时具有显著的性能优势，其复杂度为 O(1)。
+
+- **简洁的事件驱动 API**:
+    - `addFd(fd)`: 将一个文件描述符纳入 `epoll` 的监控范围。
+    - `registerCallback(fd, event, cb)`: 为指定 fd 的特定事件（如 `EPOLLIN`）注册一个回调函数。
+    - `pollOnce(timeout)`: 调用 `epoll_wait` 阻塞等待事件，一旦事件发生，它会遍历并触发所有相应的回调。
+
+- **现代 C++ 实践**:
+    - **`std::function`**: 回调机制完全基于 `std::function`，提供了极大的灵活性，允许上层逻辑轻松地将成员函数（如 `Connection::onReadable`）或 Lambda 表达式注册为事件处理器。
+    - **`std::expected`**: 所有与系统调用交互的函数都返回 `std::expected`，强制调用者清晰地处理成功或失败路径，避免了异常开销，并使得错误处理流程更加健壮。
+
+- **健壮性设计**:
+    `Poller` 的实现考虑了复杂的边界情况。例如，它能安全地处理**在回调函数内部移除其自身文件描述符**的场景，通过复制回调列表避免了迭代器失效问题。同时，它还在内部恰当地处理了 `epoll_wait` 可能被信号中断 (`EINTR`) 的情况，对调用者屏蔽了这一底层细节。
+
+通过引入 `Poller`，服务器的主事件循环逻辑变得极为简单：循环调用 `poller.pollOnce()`，所有的 I/O 事件都将被自动、高效地分发到正确的 `Connection` 实例进行处理。
+
+### 声明式事件绑定: `Channel` 与 `bind_to`
+
+在拥有了底层的 `Poller` 引擎后，我们构建了一套更高阶的抽象来定义和注册事件，以达到极致的解耦和表达力。其核心是 `Channel` 类和一个名为 `bind_to` 的**自定义点对象 (Customization Point Object, CPO)**。
+
+这种设计将事件注册从一系列**命令式**的调用（`poller.add(...)`, `poller.register(...)`）转变为一个单一的**声明式**操作。
+
+- **`Channel`：事件蓝图**
+    `Channel` 是一个纯粹的数据对象，它扮演着“事件蓝图”的角色。它的唯一职责是**描述**一个文件描述符 (`fd`) 与其对应的 `onReadable` 和 `onWritable` 回调函数之间的关系。`Channel` 本身对 `Poller` 或任何 I/O 机制一无所知，从而实现了业务逻辑与事件引擎的完全分离。
+
+- **`bind_to`：连接蓝图与引擎的“动作”**
+    `bind_to` 是一个基于 `tag_invoke` 模式实现的 CPO。它提供了一个统一的动词，其语义是“将一个 ChannelLike 对象绑定到一个 RegisterLike 对象上”。
+    - **非侵入式设计**: `bind_to` 的具体逻辑由 `tag_invoke` 的重载提供。这使得我们可以为任意类型组合（如 `Channel` 和 `Poller`，或 `Channel` 和我们的测试 Mock）提供绑定实现，而无需修改任何组件的内部代码。
+    - **提升表达力**: 最终的 API 调用极其简洁和清晰：
+      ```cpp
+      Channel ch(fd);
+      ch.setReadableHandler(/* ... */);
+      
+      // 将“蓝图”应用到“引擎”上
+      bind_to(ch, poller); 
+      ```
+
+- **架构优势**:
+    这种模式使得替换和装饰底层 `Poller` 变得异常简单。例如，在调试时，我们可以传入一个 `LoggingPoller` 装饰器来追踪所有注册行为；在测试时，我们可以传入一个 `MockPoller` 来验证绑定逻辑的正确性——所有这些都无需改变上层的业务代码。这极大地增强了系统的可测试性和可维护性。
 
 ### TCP 网络层 (`lib/tcp`)
 
 TCP 模块提供了一套面向对象的、基于 RAII 的底层网络操作封装。采用 `std::expected` 进行错误传递，为上层事件循环提供健壮、清晰的接口。
 
-- **`FileDescriptor`**
-    - 一个纯粹的 RAII 包装器，唯一职责是管理文件描述符的生命周期，确保在对象析构时自动调用 `close()`。
-- **`Socket`**
-    - 基于 `FileDescriptor`，封装了核心的套接字操作。
-    - **无异常设计**: 所有可能失败的操作 (如 `create`, `bind`, `accept`) 均返回 `std::expected<T, std::error_code>`，强制调用者处理错误路径。
-    - **现代 API 优先**: 在支持的平台（Linux）上，通过 `socket()` 和 `accept4()` 的标志位，以**原子操作**的方式设置 `O_NONBLOCK` 和 `O_CLOEXEC`，也同时提供了基于 `fcntl` 的可移植回退方案。
-    - **默认非阻塞**: 所有创建的套接字默认为非阻塞模式。
-- **`Acceptor`**
-    - 一个高级组件，它将服务器监听的固定流程（`create` -> `bind` -> `listen`）封装在一个工厂函数 `create()` 中，向上层提供了一个简洁的 `accept()` 接口。
-- **`TcpSource` / `TcpSinker`**: `ISource` 和 `ISinker` 接口的具体 TCP 实现，被放在 `tcp` 模块中，体现了“接口定义”与“具体实现”的分离。
+-   **`FileDescriptor`**
+    -   一个纯粹的 RAII 包装器，唯一职责是管理文件描述符的生命周期，确保在对象析构时自动调用 `close()`。
+-   **`Socket`**
+    -   基于 `FileDescriptor`，封装了核心的套接字操作。
+    -   **无异常设计**: 所有可能失败的操作 (如 `create`, `bind`, `accept`) 均返回 `std::expected<T, std::error_code>`，强制调用者处理错误路径。
+    -   **现代 API 优先**: 在支持的平台（Linux）上，通过 `socket()` 和 `accept4()` 的标志位，以**原子操作**的方式设置 `O_NONBLOCK` 和 `O_CLOEXEC`，也同时提供了基于 `fcntl` 的可移植回退方案。
+    -   **默认非阻塞**: 所有创建的套接字默认为非阻塞模式。
+-   **`Acceptor`**
+    -   它将服务器监听的固定流程（`create` -> `bind` -> `listen`）封装在一个工厂函数 `create()` 中。
+    -   **职责分离**: `Acceptor` 本身不与任何事件循环（如 `Poller`）耦合。它只负责接收新连接，并将它们通过高阶回调函数 `setAcceptHandler` 传递给上层业务逻辑。它的 `onAccept()` 方法可作为底层的 I/O 事件回调，完美地融入了项目的 `Channel` / `bind_to` 架构中，被视为一个标准的事件源。
+-   **`TcpSource` / `TcpSinker`**: `ISource` 和 `ISinker` 接口的具体 TCP 实现，被放在 `tcp` 模块中，体现了“接口定义”与“具体实现”的分离。
 
 ____
 
