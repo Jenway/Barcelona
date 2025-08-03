@@ -72,7 +72,7 @@ TEST_F(ConnectionTest, FullCycleHappyPath)
 
     auto result = connection_.onReadable();
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(connection_.interestedEvents(), POLL_OUT);
+    EXPECT_EQ(connection_.interestedEvents(), core::EventType::Write);
 
     // --- 阶段 2: 写 ---
     // 期望 onWritable 被调用时，handler_->onWriteReady() 会被调用
@@ -96,7 +96,7 @@ TEST_F(ConnectionTest, PartialWrite)
     EXPECT_CALL(*handler_ptr_, onData(_));
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::WantWrite));
     connection_.onReadable();
-    ASSERT_EQ(connection_.interestedEvents(), POLL_OUT);
+    ASSERT_EQ(connection_.interestedEvents(), core::EventType::Write);
 
     // --- 第一次写 ---
     // 模拟 Handler 只写了一部分数据，需要继续写
@@ -106,7 +106,7 @@ TEST_F(ConnectionTest, PartialWrite)
     auto result = connection_.onWritable();
     ASSERT_TRUE(result.has_value());
     // 验证状态：Connection 应该保持 WRITING 状态
-    EXPECT_EQ(connection_.interestedEvents(), POLL_OUT);
+    EXPECT_EQ(connection_.interestedEvents(), core::EventType::Write);
     EXPECT_FALSE(connection_.isClosed());
 
     // --- 第二次写 ---
@@ -161,7 +161,7 @@ TEST_F(ConnectionTest, SinkerReturnsIoError)
     EXPECT_CALL(*handler_ptr_, onData(_));
     EXPECT_CALL(*handler_ptr_, getStatus()).WillOnce(Return(core::protocol::Status::WantWrite));
     connection_.onReadable();
-    ASSERT_EQ(connection_.interestedEvents(), POLL_OUT);
+    ASSERT_EQ(connection_.interestedEvents(), core::EventType::Write);
 
     // 模拟 Handler 在写入时返回一个 I/O 错误
     std::error_code broken_pipe = std::make_error_code(std::errc::broken_pipe);

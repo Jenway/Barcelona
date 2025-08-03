@@ -12,8 +12,10 @@ enable_testing()
 find_package(GTest REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(magic_enum REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 add_subdirectory(lib/common)
+add_subdirectory(lib/config)
 add_subdirectory(lib/utils)
 add_subdirectory(lib/logger)
 add_subdirectory(lib/io)
@@ -26,5 +28,9 @@ add_executable(${PROJECT_NAME}
     src/main.cc
     src/server.cc
 )
-target_link_libraries(${PROJECT_NAME} PRIVATE core_lib tcp_lib logger)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    webserv::core
+    webserv::tcp
+    webserv::logger
+)
 target_precompile_headers(${PROJECT_NAME} PRIVATE "lib/logger/include/logger.hpp")

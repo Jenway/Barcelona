@@ -1,13 +1,11 @@
 #include <atomic>
-#include <chrono>
 #include <gtest/gtest.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
-#include <thread>
 #include <unistd.h>
-#include <vector>
 
 #include "Poller.hpp"
+#include "Status.hpp"
 
 class PollerTest : public ::testing::Test {
 protected:
@@ -50,10 +48,12 @@ TEST_F(PollerTest, PollOnceTimesOutWhenNoEvents)
     std::atomic<bool> callback_triggered = false;
 
     ASSERT_TRUE(poller.addFd(pipe_fds[0]).has_value());
-    ASSERT_TRUE(poller.registerCallback(pipe_fds[0], EPOLLIN, [&]() {
+    ASSERT_TRUE(poller.registerCallback(pipe_fds[0], core::EventType::Read, [&]() {
                           callback_triggered = true;
                       })
             .has_value());
+
+    ASSERT_TRUE(poller.updateEvents(pipe_fds[0], core::EventType::Read).has_value());
 
     // 使用 10ms 的超时来调用 pollOnce
     // 由于管道中没有数据，不应该有任何事件
@@ -70,13 +70,15 @@ TEST_F(PollerTest, CallbackIsTriggeredOnEvent)
     std::atomic<int> callback_count = 0;
 
     ASSERT_TRUE(poller.addFd(pipe_fds[0]).has_value());
-    // 为管道的读端注册一个可读事件（EPOLLIN）的回调
-    ASSERT_TRUE(poller.registerCallback(pipe_fds[0], EPOLLIN, [&]() {
+    // 为管道的读端注册一个可读事件（core::EventType::Read）的回调
+    ASSERT_TRUE(poller.registerCallback(pipe_fds[0], core::EventType::Read, [&]() {
                           callback_count++;
                       })
             .has_value());
 
-    // 向管道的写端写入一个字节，这将触发读端的 EPOLLIN 事件
+    ASSERT_TRUE(poller.updateEvents(pipe_fds[0], core::EventType::Read).has_value());
+
+    // 向管道的写端写入一个字节，这将触发读端的 core::EventType::Read 事件
     char buffer = 'x';
     ASSERT_EQ(write(pipe_fds[1], &buffer, 1), 1);
 
@@ -106,17 +108,21 @@ TEST_F(PollerTest, HandlesMultipleFds)
 
     // 添加并注册管道的回调
     ASSERT_TRUE(poller.addFd(pipe_fds[0]).has_value());
-    ASSERT_TRUE(poller.registerCallback(pipe_fds[0], EPOLLIN, [&]() {
+    ASSERT_TRUE(poller.registerCallback(pipe_fds[0], core::EventType::Read, [&]() {
                           pipe_callback_fired = true;
                       })
             .has_value());
 
+    ASSERT_TRUE(poller.updateEvents(pipe_fds[0], core::EventType::Read).has_value());
+
     // 添加并注册 eventfd 的回调
     ASSERT_TRUE(poller.addFd(efd).has_value());
-    ASSERT_TRUE(poller.registerCallback(efd, EPOLLIN, [&]() {
+    ASSERT_TRUE(poller.registerCallback(efd, core::EventType::Read, [&]() {
                           eventfd_callback_fired = true;
                       })
             .has_value());
+
+    ASSERT_TRUE(poller.updateEvents(efd, core::EventType::Read).has_value());
 
     // 触发 eventfd 事件
     uint64_t val = 1;
@@ -151,12 +157,14 @@ TEST_F(PollerTest, RemoveFdFromWithinCallback)
     ASSERT_TRUE(poller.addFd(efd).has_value());
 
     // 注册一个回调，它会调用 poller.removeFd() 来移除自己
-    ASSERT_TRUE(poller.registerCallback(efd, EPOLLIN, [&]() {
+    ASSERT_TRUE(poller.registerCallback(efd, core::EventType::Read, [&]() {
                           callback_count++;
                           // 在回调内部移除自己
                           ASSERT_TRUE(poller.removeFd(efd).has_value());
                       })
             .has_value());
+
+    ASSERT_TRUE(poller.updateEvents(efd, core::EventType::Read).has_value());
 
     // 第一次触发事件
     uint64_t val = 1;

@@ -141,7 +141,7 @@ void Server::onNewConnection(Socket&& socket)
 
     auto update_poller_events = [this, conn_ptr, clientFd] {
         auto events = conn_ptr->interestedEvents();
-        LOG_TRACE("fd={}: Updating poller events to (mask: {:#x})", clientFd, events);
+        LOG_TRACE("fd={}: Updating poller events to (mask: {})", clientFd, events);
         if (auto res = poller_.updateEvents(clientFd, events); !res) {
             LOG_ERROR("Failed to update poller events for fd={}: {}", clientFd, res.error());
             removeConnection(clientFd);

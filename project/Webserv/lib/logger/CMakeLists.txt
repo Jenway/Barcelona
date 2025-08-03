@@ -2,6 +2,8 @@
 
 add_library(logger INTERFACE)
 
+add_library(webserv::logger ALIAS logger)
+
 target_compile_definitions(logger INTERFACE
     PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}/"
 )
@@ -11,7 +13,7 @@ target_include_directories(logger INTERFACE
 )
 
 target_link_libraries(logger INTERFACE
-    common_lib
-    utils_lib
+    webserv::common
+    webserv::utils
     fmt::fmt
 )

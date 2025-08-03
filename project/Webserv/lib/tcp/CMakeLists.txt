@@ -7,15 +7,17 @@ add_library(tcp_lib
     src/TcpSource.cc
 )
 
+add_library(webserv::tcp ALIAS tcp_lib)
+
 target_include_directories(tcp_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(tcp_lib
     PUBLIC
-    common_lib
-    io_lib
+    webserv::common
+    webserv::io
     PRIVATE
     logger
-    utils_lib
+    webserv::utils
 )

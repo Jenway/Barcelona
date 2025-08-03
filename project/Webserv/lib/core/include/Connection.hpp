@@ -20,7 +20,7 @@ public:
     auto onWritable() -> std::expected<void, std::system_error>;
     [[nodiscard]] auto isClosed() const -> bool { return state_ == core::ConnectionState::CLOSED; }
 
-    [[nodiscard]] auto interestedEvents() const -> uint8_t;
+    [[nodiscard]] auto interestedEvents() const -> core::EventType;
 
     [[nodiscard]] auto toString() const -> std::string;
 

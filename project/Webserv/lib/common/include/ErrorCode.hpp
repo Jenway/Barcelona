@@ -16,6 +16,7 @@ enum class ErrorCode : uint8_t {
     // CONFIG
     Config_FileNotFound,
     Config_ParseError,
+    Config_InvalidBodySize,
     // HTTP
     Http_BadRequest,
     Http_InvalidMethod,

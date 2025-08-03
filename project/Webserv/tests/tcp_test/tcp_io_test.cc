@@ -2,6 +2,7 @@
 #include "Connection.hpp"
 #include "IProtocolHandler.hpp"
 #include "Socket.hpp"
+#include "Status.hpp"
 #include "TcpSinker.hpp"
 #include "TcpSource.hpp"
 #include <arpa/inet.h>
@@ -9,6 +10,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <netinet/in.h>
+#include <sys/epoll.h>
 #include <thread>
 
 using namespace ::testing;
@@ -154,7 +156,7 @@ TEST(TcpIntegrationTest, FullPingPongCycle)
     EXPECT_EQ(handler_future.get(), ping_msg);
 
     // 8. 此时 Connection 应该想写了
-    ASSERT_EQ(connection.interestedEvents(), POLL_OUT);
+    ASSERT_EQ(connection.interestedEvents(), core::EventType::Write);
 
     // 9. 触发服务器端 onWritable
     auto write_res = connection.onWritable();

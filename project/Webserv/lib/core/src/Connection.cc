@@ -15,6 +15,7 @@ using State = core::ConnectionState;
 using ReadStatus = core::ReadResult::Status;
 using WriteStatus = core::WriteResult::Status;
 using ProtoStatus = core::protocol::Status;
+using Event = core::EventType;
 
 Connection::Connection(Socket socket, std::unique_ptr<protocol::IHandler> handler,
     std::unique_ptr<ISource> source, std::unique_ptr<ISinker> sinker)
@@ -68,10 +69,10 @@ auto Connection::onWritable() -> std::expected<void, std::system_error>
     auto [status, bytes_write] = *write_result;
 
     switch (status) {
-    case core::WriteResult::Continue:
+    case WriteStatus::Continue:
         state_ = State::WRITING;
         return {};
-    case core::WriteResult::Finished:
+    case WriteStatus::Finished:
         break;
     }
 
@@ -111,16 +112,16 @@ void Connection::updateStateFromProtocol()
     }
 }
 
-auto Connection::interestedEvents() const -> uint8_t
+auto Connection::interestedEvents() const -> Event
 {
     switch (state_) {
     case State::READING:
-        return EPOLLIN;
+        return Event::Read;
     case State::WRITING:
-        return EPOLLOUT;
+        return Event::Write;
     case State::CLOSING:
     case State::CLOSED:
     default:
-        return 0; // 不再对任何事件感兴趣
+        return Event::None;
     }
 }

@@ -36,6 +36,13 @@ inline constexpr struct to_unexpected_t {
     {
         return detail::tag_invoke_impl(ec, std::forward<T>(msg), loc);
     }
+    template <typename T>
+    auto operator()(std::errc ec, T&& msg, std::source_location loc = std::source_location::current()) const
+        requires(std::is_convertible_v<T, std::string_view>)
+    {
+        auto code = std::make_error_code(ec);
+        return detail::tag_invoke_impl(code, std::forward<T>(msg), loc);
+    }
 
     // 重载 3: (ec, [loc])
     auto operator()(std::error_code ec, std::source_location loc = std::source_location::current()) const
@@ -48,6 +55,13 @@ inline constexpr struct to_unexpected_t {
     {
         auto ec = std::error_code { errno, std::generic_category() };
         return detail::tag_invoke_impl(ec, ec.message(), loc);
+    }
+
+    // 重载 4: (errc), [loc]
+    auto operator()(std::errc ec, std::source_location loc = std::source_location::current()) const
+    {
+        auto code = std::make_error_code(ec);
+        return detail::tag_invoke_impl(code, code.message(), loc);
     }
 
 } to_unexpected;
