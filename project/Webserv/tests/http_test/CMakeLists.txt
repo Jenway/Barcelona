@@ -1,12 +1,10 @@
 # /tests/http_test/CMakeLists.txt
 
-add_executable(http_test
-    handler_test.cc
-    parser_test.cc
-    writer_test.cc
-    router_test.cc
-)
+file(GLOB_RECURSE TEST_HTTP_SOURCES "*.cc")
 
+add_executable(http_test
+    ${TEST_HTTP_SOURCES}
+)
 target_link_libraries(http_test PRIVATE
     webserv::logger
     webserv::io

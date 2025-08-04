@@ -1,5 +1,6 @@
 #include "Acceptor.hpp"
 #include "ErrorCode.hpp"
+#include "FileDescriptor.hpp"
 #include <arpa/inet.h>
 #include <gtest/gtest.h>
 #include <netinet/in.h>
@@ -40,7 +41,7 @@ TEST(TcpComponentsTest, AcceptorLifecycle)
         // 为了简化测试，我们直接创建一个标准的、阻塞的 socket
         int client_fd = ::socket(AF_INET, SOCK_STREAM, 0);
         ASSERT_NE(client_fd, -1);
-        FileDescriptor fd_guard(client_fd); // 用 FileDescriptor 来管理它的生命周期
+        utils::FileDescriptor fd_guard(client_fd); // 用 FileDescriptor 来管理它的生命周期
         // ===============================================================================
 
         // 延迟一小会儿，确保服务器的 accept() 调用已经准备就绪

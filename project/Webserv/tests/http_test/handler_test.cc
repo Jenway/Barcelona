@@ -1,11 +1,11 @@
-#include "HttpProtocolHandler.hpp"
-#include "HttpStatus.hpp"
-#include "IRequestHandler.hpp"
-#include "IRequestParser.hpp"
-#include "IResponseWriter.hpp"
 #include "ISinker.hpp"
-#include "Message.hpp"
 #include "Status.hpp"
+#include "http/core/HttpProtocolHandler.hpp"
+#include "http/core/HttpStatus.hpp"
+#include "http/core/Message.hpp"
+#include "http/interfaces/IRequestHandler.hpp"
+#include "http/interfaces/IRequestParser.hpp"
+#include "http/interfaces/IResponseWriter.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <memory>
@@ -32,7 +32,7 @@ public:
     MOCK_METHOD(void, reset, (), (override));
 };
 
-class MockRequestHandler : public http::IRequestHandler {
+class MockRequestHandler : public http::IRequestDispatcher {
 public:
     MOCK_METHOD((std::expected<http::Response, std::error_code>), handleRequest, (const http::Request&), (override));
     MOCK_METHOD(http::Response, handleError, (http::StatusCode), (override));

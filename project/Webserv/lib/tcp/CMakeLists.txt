@@ -17,7 +17,7 @@ target_link_libraries(tcp_lib
     PUBLIC
     webserv::common
     webserv::io
+    webserv::utils
     PRIVATE
     logger
-    webserv::utils
 )

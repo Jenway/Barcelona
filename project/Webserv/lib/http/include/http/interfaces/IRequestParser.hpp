@@ -1,8 +1,8 @@
 // in lib/http/include/IRequestParser.hpp
 #pragma once
 
-#include "HttpStatus.hpp"
-#include "Message.hpp"
+#include "http/core/HttpStatus.hpp"
+#include "http/core/Message.hpp"
 #include <cstdint>
 #include <expected>
 #include <string_view>

@@ -1,5 +1,5 @@
 // in lib/http/src/ResponseFactory.cc
-#include "ResponseFactory.hpp"
+#include "http/utils/ResponseFactory.hpp"
 #include <vector>
 
 namespace http::responses {
@@ -43,6 +43,21 @@ auto createText(std::string body, std::string_view content_type) -> Response
 auto createJson(std::string json_body) -> Response
 {
     return createText(std::move(json_body), "application/json; charset=utf-8");
+}
+
+auto createFromFile(const utils::FileInfo& file_info, int fd) -> Response
+{
+    Response response = createStockResponse<StatusCode::Ok>();
+
+    // 2. 添加文件特有的头部
+    response.headers["Content-Type"] = utils::getMimeType(file_info.full_path);
+    response.headers["Content-Length"] = std::to_string(file_info.size);
+    response.headers["Connection"] = "close"; // 暂时先关闭
+
+    // 3. 设置 FileBody
+    response.body = FileBody { .fd = fd, .size = file_info.size };
+
+    return response;
 }
 
 } // namespace http::responses

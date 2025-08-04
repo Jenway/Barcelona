@@ -1,6 +1,6 @@
-#include "ResponseWriter.hpp"
-#include "Message.hpp"
-#include "Serializer.hpp"
+#include "http/core/ResponseWriter.hpp"
+#include "http/core/Message.hpp"
+#include "http/utils/Serializer.hpp"
 #include <cstdio>
 #include <utility>
 

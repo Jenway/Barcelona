@@ -1,8 +1,8 @@
 #pragma once
 
-#include "IResponseWriter.hpp"
 #include "ISinker.hpp"
-#include "Message.hpp"
+#include "http/core/Message.hpp"
+#include "http/interfaces/IResponseWriter.hpp"
 #include <expected>
 #include <string>
 

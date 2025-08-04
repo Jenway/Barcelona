@@ -1,13 +1,10 @@
 # lib/http/CMakeLists.txt
 
-add_library(http_lib
-    src/HttpProtocolHandler.cc
-    src/RequestParser.cc
-    src/RequestRouter.cc
-    src/ResponseFactory.cc
-    src/ResponseWriter.cc
-)
+file(GLOB_RECURSE HTTP_SOURCES "src/*.cc")
 
+add_library(http_lib
+    ${HTTP_SOURCES}
+)
 add_library(webserv::http ALIAS http_lib)
 
 target_compile_definitions(http_lib PUBLIC MAGIC_ENUM_RANGE_MAX=1024)

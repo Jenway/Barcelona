@@ -1,8 +1,7 @@
 #pragma once
 
-#include "ErrorCode.hpp"
-#include "IRequestParser.hpp"
-#include "Message.hpp"
+#include "http/core/Message.hpp"
+#include "http/interfaces/IRequestParser.hpp"
 #include <cstdint>
 #include <expected>
 #include <string>

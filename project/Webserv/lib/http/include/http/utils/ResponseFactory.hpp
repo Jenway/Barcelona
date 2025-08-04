@@ -1,8 +1,9 @@
 // in lib/http/include/ResponseFactory.hpp
 #pragma once
 
-#include "HttpStatus.hpp"
-#include "Message.hpp"
+#include "FileUtils.hpp"
+#include "http/core/HttpStatus.hpp"
+#include "http/core/Message.hpp"
 
 namespace http::responses {
 
@@ -45,4 +46,14 @@ auto createStockResponse(StatusCode code) -> Response;
 auto createText(std::string body, std::string_view content_type = "text/plain; charset=utf-8") -> Response;
 auto createJson(std::string json_body) -> Response;
 
+/**
+ * @brief 根据文件信息和文件描述符，创建一个完整的 200 OK 响应。
+ *
+ * 该函数会自动设置状态码, Content-Type, Content-Length, 和 FileBody。
+ *
+ * @param file_info 包含了文件大小和路径的 FileInfo 结构体。
+ * @param fd 已打开的文件的有效文件描述符。
+ * @return 一个配置好的 http::Response 对象。
+ */
+auto createFromFile(const utils::FileInfo& file_info, int fd) -> Response;
 } // namespace http::responses

@@ -30,5 +30,5 @@ public:
     auto getFd() const -> int;
 
 private:
-    FileDescriptor sock_fd_;
+    utils::FileDescriptor sock_fd_;
 };

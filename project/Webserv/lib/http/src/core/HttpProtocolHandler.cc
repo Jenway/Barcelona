@@ -1,11 +1,11 @@
 // lib/http/src/HttpProtocolHandler.cc
-#include "HttpProtocolHandler.hpp"
+#include "http/core/HttpProtocolHandler.hpp"
 #include "Error.hpp"
 #include "ErrorCode.hpp"
-#include "HttpStatus.hpp"
 #include "ISinker.hpp"
-#include "Message.hpp"
-#include "ResponseFactory.hpp"
+#include "http/core/HttpStatus.hpp"
+#include "http/core/Message.hpp"
+#include "http/utils/ResponseFactory.hpp"
 #include "logger.hpp"
 #include <expected>
 #include <fmt/format.h>
@@ -15,9 +15,9 @@ namespace http {
 HttpProtocolHandler::HttpProtocolHandler(
     std::unique_ptr<IRequestParser> parser,
     std::unique_ptr<IResponseWriter> writer,
-    std::unique_ptr<IRequestHandler> request_handler)
+    std::unique_ptr<IRequestDispatcher> request_router)
     : _parser(std::move(parser))
-    , _request_handler(std::move(request_handler))
+    , _request_router(std::move(request_router))
     , _response_writer(std::move(writer))
 {
 }
@@ -97,7 +97,7 @@ void HttpProtocolHandler::resetForNewRequest()
 
 void HttpProtocolHandler::generateResponse(StatusCode code)
 {
-    Response response = _request_handler->handleError(code);
+    Response response = _request_router->handleError(code);
     _response_writer->bind_to(std::move(response));
     _state = State::SendingResponse;
 }
@@ -105,7 +105,7 @@ void HttpProtocolHandler::generateResponse(StatusCode code)
 void HttpProtocolHandler::generateResponse()
 {
     // 从业务逻辑层获取响应
-    auto response_or_error = _request_handler->handleRequest(_parser->getRequest());
+    auto response_or_error = _request_router->handleRequest(_parser->getRequest());
 
     if (response_or_error) {
         // 业务逻辑成功，绑定正常的响应

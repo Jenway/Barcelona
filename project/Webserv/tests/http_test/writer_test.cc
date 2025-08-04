@@ -1,6 +1,6 @@
 #include "ISinker.hpp" // 它的依赖
-#include "Message.hpp"
-#include "ResponseWriter.hpp" // 被测试的类
+#include "http/core/Message.hpp"
+#include "http/core/ResponseWriter.hpp" // 被测试的类
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <memory>

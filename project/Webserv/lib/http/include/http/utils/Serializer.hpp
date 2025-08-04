@@ -1,7 +1,7 @@
 // in lib/http/include/Serializer.hpp
 #pragma once
 
-#include "Message.hpp"
+#include "http/core/Message.hpp"
 #include <fmt/core.h>
 #include <string>
 
