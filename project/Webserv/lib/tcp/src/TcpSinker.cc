@@ -1,6 +1,7 @@
 #include "TcpSinker.hpp"
 
 #include <cstddef>
+#include <cstdio>
 #include <expected>
 #include <unistd.h>
 
@@ -51,7 +52,7 @@ auto TcpSinker::write(const char* data, size_t len)
     };
 }
 
-auto TcpSinker::sendfile(int in_fd, off_t& /*offset*/, size_t count)
+auto TcpSinker::sendfile(int in_fd, off_t& offset, size_t count)
     -> std::expected<core::WriteResult, std::error_code>
 {
     if (fd_ == -1) {
@@ -61,7 +62,7 @@ auto TcpSinker::sendfile(int in_fd, off_t& /*offset*/, size_t count)
         return core::WriteResult { .status = core::WriteResult::Status::Finished, .bytes_sent = 0 };
     }
 
-    auto result = net_utils::sendfile(fd_, in_fd, nullptr, count);
+    auto result = net_utils::sendfile(fd_, in_fd, &offset, count);
 
     if (!result) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -74,6 +75,7 @@ auto TcpSinker::sendfile(int in_fd, off_t& /*offset*/, size_t count)
     }
 
     std::size_t bytes_sent = *result;
+    offset += static_cast<off_t>(bytes_sent);
 
     if (bytes_sent < count) {
         return core::WriteResult {

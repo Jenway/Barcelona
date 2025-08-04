@@ -21,6 +21,7 @@ enum class ErrorCode : uint8_t {
     Http_BadRequest,
     Http_InvalidMethod,
     Http_VersionNotSupported,
+
 };
 
 class WebServerCategory : public std::error_category {

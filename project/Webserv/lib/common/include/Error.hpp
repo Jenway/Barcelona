@@ -71,6 +71,14 @@ inline constexpr struct to_unexpected_code_t {
     {
         return std::unexpected(std::error_code { errno, std::generic_category() });
     }
+    auto operator()(std::errc ec) const
+    {
+        return std::unexpected(std::make_error_code(ec));
+    }
+    auto operator()(std::error_code ec) const
+    {
+        return std::unexpected(ec);
+    }
 } to_unexpected_code;
 
 } // namespace error

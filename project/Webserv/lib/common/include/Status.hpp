@@ -51,7 +51,7 @@ struct ReadResult {
 struct WriteResult {
     enum class Status : uint8_t {
         Finished, ///< 数据已全部发送
-        Continue ///< 数据未写完，需要继续写
+        Continue, ///< 数据未写完，需要继续写
     };
     Status status;
     std::size_t bytes_sent;
@@ -69,6 +69,14 @@ namespace protocol {
 
 } // namespace protocol
 } // namespace core
+
+namespace http {
+enum class Method : uint8_t {
+    GET,
+    POST,
+    DELETE
+};
+}
 
 // ------------------------- 格式化支持区域 -------------------------------
 namespace fmt {

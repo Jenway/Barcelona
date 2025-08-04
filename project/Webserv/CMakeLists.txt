@@ -20,6 +20,7 @@ add_subdirectory(lib/utils)
 add_subdirectory(lib/logger)
 add_subdirectory(lib/io)
 add_subdirectory(lib/tcp)
+add_subdirectory(lib/http)
 add_subdirectory(lib/core)
 
 add_subdirectory(tests)
