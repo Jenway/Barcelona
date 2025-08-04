@@ -1,6 +1,7 @@
 // in lib/http/include/HttpProtocolHandler.hpp
 #pragma once
 
+#include "HttpStatus.hpp"
 #include "IProtocolHandler.hpp"
 #include "IRequestHandler.hpp"
 #include "IRequestParser.hpp"
@@ -32,10 +33,10 @@ private:
         SendingResponse,
         Finished
     };
-    void generateResponse(bool is_parser_error = false);
+    void generateResponse();
+    void generateResponse(StatusCode code);
     void onResponseFinished();
     void resetForNewRequest();
-    void generateInternalErrorResponse();
 
     State _state = State::WaitingForHeaders;
 

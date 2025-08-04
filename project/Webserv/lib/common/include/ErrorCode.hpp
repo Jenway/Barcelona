@@ -17,11 +17,6 @@ enum class ErrorCode : uint8_t {
     Config_FileNotFound,
     Config_ParseError,
     Config_InvalidBodySize,
-    // HTTP
-    Http_BadRequest,
-    Http_InvalidMethod,
-    Http_VersionNotSupported,
-
 };
 
 class WebServerCategory : public std::error_category {

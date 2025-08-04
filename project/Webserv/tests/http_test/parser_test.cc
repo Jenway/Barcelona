@@ -158,21 +158,21 @@ TEST_F(RequestParserTest, HandlesInvalidRequestLine)
     // 这种情况下 parse 会返回 unexpected，has_value()==false
     ASSERT_FALSE(res.has_value());
     // （可选）检查具体错误码
-    EXPECT_EQ(res.error(), ErrorCode::Http_BadRequest);
+    EXPECT_EQ(res.error(), http::StatusCode::BadRequest);
 }
 
 TEST_F(RequestParserTest, HandlesInvalidHeader)
 {
     auto res = parser->parse("GET / HTTP/1.0\r\nHost without colon\r\n\r\n");
     ASSERT_FALSE(res.has_value());
-    EXPECT_EQ(res.error(), ErrorCode::Http_BadRequest);
+    EXPECT_EQ(res.error(), http::StatusCode::BadRequest);
 }
 
 TEST_F(RequestParserTest, HandlesInvalidContentLength)
 {
     auto res = parser->parse("POST /submit HTTP/1.0\r\nContent-Length: abc\r\n\r\nabc");
     ASSERT_FALSE(res.has_value());
-    EXPECT_EQ(res.error(), ErrorCode::Http_BadRequest);
+    EXPECT_EQ(res.error(), http::StatusCode::BadRequest);
 }
 
 TEST_F(RequestParserTest, HandlesRequestWithNoDoubleCRLF)

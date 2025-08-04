@@ -1,6 +1,7 @@
 // in lib/http/include/IRequestParser.hpp
 #pragma once
 
+#include "HttpStatus.hpp"
 #include "Message.hpp"
 #include <cstdint>
 #include <expected>
@@ -17,7 +18,7 @@ public:
     };
 
     virtual ~IRequestParser() = default;
-    virtual auto parse(std::string_view data) -> std::expected<IRequestParser::State, std::error_code> = 0;
+    virtual auto parse(std::string_view data) -> std::expected<IRequestParser::State, StatusCode> = 0;
     [[nodiscard]] virtual auto getRequest() const -> const http::Request& = 0;
     virtual void reset() = 0;
 };

@@ -15,7 +15,7 @@ public:
     RequestParser();
 
     void reset() override;
-    auto parse(std::string_view data) -> std::expected<IRequestParser::State, std::error_code> override;
+    auto parse(std::string_view data) -> std::expected<IRequestParser::State, StatusCode> override;
     [[nodiscard]] auto getRequest() const -> const Request& override;
 
 private:
@@ -29,9 +29,9 @@ private:
         Success,
         Incomplete
     };
-    auto parseRequestLine() -> std::expected<ParseResult, ErrorCode>;
-    auto parseHeaders() -> std::expected<ParseResult, ErrorCode>;
-    auto parseBody() -> std::expected<ParseResult, ErrorCode>;
+    auto parseRequestLine() -> std::expected<ParseResult, StatusCode>;
+    auto parseHeaders() -> std::expected<ParseResult, StatusCode>;
+    auto parseBody() -> std::expected<ParseResult, StatusCode>;
 
     Step _step;
     std::string _buffer;

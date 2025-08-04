@@ -2,8 +2,11 @@
 #include "HttpProtocolHandler.hpp"
 #include "Error.hpp"
 #include "ErrorCode.hpp"
+#include "HttpStatus.hpp"
 #include "ISinker.hpp"
 #include "Message.hpp"
+#include "ResponseFactory.hpp"
+#include "logger.hpp"
 #include <expected>
 #include <fmt/format.h>
 
@@ -53,7 +56,7 @@ void HttpProtocolHandler::onData(std::string_view data)
         }
 
     } else {
-        generateResponse(true /* is_error */);
+        generateResponse(parse_state.error());
     }
 }
 
@@ -92,66 +95,30 @@ void HttpProtocolHandler::resetForNewRequest()
     _response_writer->reset();
 }
 
-void HttpProtocolHandler::generateResponse(bool is_parser_error)
+void HttpProtocolHandler::generateResponse(StatusCode code)
 {
-    if (is_parser_error) {
-        // 解析器错误是明确的，直接让 handler 生成一个错误响应 (e.g. 400)
-        // 这个路径我们信任它不会失败
-        Response response = _request_handler->handleError();
-        _response_writer->bind_to(std::move(response));
-        _state = State::SendingResponse;
-        return;
-    }
-
-    // 从业务逻辑层获取响应，它现在返回一个 expected 对象
-    auto response_or_error = _request_handler->handleRequest(_parser->getRequest());
-
-    if (response_or_error) {
-        _response_writer->bind_to(std::move(*response_or_error));
-
-        _state = State::SendingResponse;
-    } else {
-        // --- 失败路径 ---
-        // response_or_error 包含一个 error_code
-        // 记录具体的错误原因
-        // log_error("Business logic failed: {}", response_or_error.error().message());
-
-        // 调用我们的“最后一道防线”来生成 500 错误
-        generateInternalErrorResponse();
-    }
-}
-
-// void HttpProtocolHandler::onHeadersCompleted()
-// {
-//     const auto& method = _parser->getRequest().method;
-
-//     if (method == "GET" || method == "HEAD") {
-//         generateResponse();
-//     } else {
-//         _state = State::ReadingBody;
-//     }
-// }
-
-void HttpProtocolHandler::generateInternalErrorResponse()
-{
-    // 创建一个硬编码的 500 响应
-    http::Response response;
-    response.version = "HTTP/1.1";
-    response.status_code = 500;
-    response.reason_phrase = "Internal Server Error";
-
-    // 关键：在服务器内部错误后，我们必须强制关闭连接，
-    // 因为服务器状态可能已不一致。
-    response.headers["Connection"] = "close";
-
-    // 为了调试和标准，可以提供一个最小的body
-    std::string body_str = "500 Internal Server Error";
-    response.headers["Content-Type"] = "text/plain";
-    response.headers["Content-Length"] = std::to_string(body_str.size());
-    response.body = std::vector<char>(body_str.begin(), body_str.end());
-
-    // 使用这个“安全”的响应来创建 writer
+    Response response = _request_handler->handleError(code);
     _response_writer->bind_to(std::move(response));
     _state = State::SendingResponse;
 }
+
+void HttpProtocolHandler::generateResponse()
+{
+    // 从业务逻辑层获取响应
+    auto response_or_error = _request_handler->handleRequest(_parser->getRequest());
+
+    if (response_or_error) {
+        // 业务逻辑成功，绑定正常的响应
+        _response_writer->bind_to(std::move(*response_or_error));
+        _state = State::SendingResponse;
+    } else {
+        // 业务逻辑失败了！这是一个服务器内部错误。
+        // 记录错误，并生成一个标准的 500 响应。
+        LOG_ERROR("Request handler failed: {}", response_or_error.error().message());
+        _response_writer->bind_to(
+            http::responses::createStockResponse<http::StatusCode::InternalServerError>());
+        _state = State::SendingResponse;
+    }
+}
+
 } // namespace http

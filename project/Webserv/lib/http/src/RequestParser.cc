@@ -32,12 +32,12 @@ auto RequestParser::getRequest() const -> const Request&
     return _request;
 }
 
-auto RequestParser::parse(std::string_view data) -> std::expected<IRequestParser::State, std::error_code>
+auto RequestParser::parse(std::string_view data) -> std::expected<IRequestParser::State, StatusCode>
 {
     _buffer.append(data);
 
     while (true) {
-        std::expected<ParseResult, ErrorCode> result;
+        std::expected<ParseResult, StatusCode> result;
 
         switch (_step) {
         case Step::RequestLine:
@@ -81,7 +81,7 @@ auto RequestParser::parse(std::string_view data) -> std::expected<IRequestParser
 
 // --- 子步骤函数 ---
 
-auto RequestParser::parseRequestLine() -> std::expected<ParseResult, ErrorCode>
+auto RequestParser::parseRequestLine() -> std::expected<ParseResult, StatusCode>
 {
     const auto pos = _buffer.find(CRLF);
     if (pos == std::string::npos) {
@@ -95,23 +95,23 @@ auto RequestParser::parseRequestLine() -> std::expected<ParseResult, ErrorCode>
     ss >> method_str >> _request.uri >> _request.version;
 
     if (ss.fail() || !ss.eof()) {
-        return std::unexpected(ErrorCode::Http_BadRequest);
+        return std::unexpected(StatusCode::BadRequest);
     }
 
     const auto method_opt = magic_enum::enum_cast<http::Method>(method_str);
     if (!method_opt) {
-        return std::unexpected(ErrorCode::Http_InvalidMethod);
+        return std::unexpected(StatusCode::NotImplemented);
     }
     _request.method = *method_opt;
 
     if (!_request.version.starts_with("HTTP/")) {
-        return std::unexpected(ErrorCode::Http_VersionNotSupported);
+        return std::unexpected(StatusCode::HTTPVersionNotSupported);
     }
 
     return ParseResult::Success; // 成功
 }
 
-auto RequestParser::parseHeaders() -> std::expected<ParseResult, ErrorCode>
+auto RequestParser::parseHeaders() -> std::expected<ParseResult, StatusCode>
 {
     if (_buffer.starts_with(CRLF)) {
         _buffer.erase(0, CRLF.length());
@@ -138,7 +138,7 @@ auto RequestParser::parseHeaders() -> std::expected<ParseResult, ErrorCode>
 
         const auto colonPos = line.find(':');
         if (colonPos == std::string::npos) {
-            return std::unexpected(ErrorCode::Http_BadRequest);
+            return std::unexpected(StatusCode::BadRequest);
         }
 
         std::string key = line.substr(0, colonPos);
@@ -158,19 +158,19 @@ auto RequestParser::parseHeaders() -> std::expected<ParseResult, ErrorCode>
             // 尝试转换，如果失败则说明格式错误
             static_cast<void>(std::stoul(it->second));
         } catch (const std::exception&) {
-            return std::unexpected(ErrorCode::Http_BadRequest);
+            return std::unexpected(StatusCode::BadRequest);
         }
     }
 
     return ParseResult::Success; // 成功
 }
 
-auto RequestParser::parseBody() -> std::expected<ParseResult, ErrorCode>
+auto RequestParser::parseBody() -> std::expected<ParseResult, StatusCode>
 {
     const auto it = _request.headers.find("Content-Length");
     if (it == _request.headers.end()) {
         // 理论上不应该发生，因为状态机逻辑会阻止无 Content-Length 的请求进入此步骤
-        return std::unexpected(ErrorCode::Http_BadRequest);
+        return std::unexpected(StatusCode::BadRequest);
     }
 
     const size_t contentLength = std::stoul(it->second);

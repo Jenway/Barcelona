@@ -4,6 +4,7 @@ add_executable(http_test
     handler_test.cc
     parser_test.cc
     writer_test.cc
+    router_test.cc
 )
 
 target_link_libraries(http_test PRIVATE

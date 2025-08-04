@@ -1,4 +1,5 @@
 #include "HttpProtocolHandler.hpp"
+#include "HttpStatus.hpp"
 #include "IRequestHandler.hpp"
 #include "IRequestParser.hpp"
 #include "IResponseWriter.hpp"
@@ -26,7 +27,7 @@ public:
 
 class MockRequestParser : public http::IRequestParser {
 public:
-    MOCK_METHOD((std::expected<IRequestParser::State, std::error_code>), parse, (std::string_view data), (override));
+    MOCK_METHOD((std::expected<IRequestParser::State, http::StatusCode>), parse, (std::string_view data), (override));
     MOCK_METHOD(const http::Request&, getRequest, (), (const, override));
     MOCK_METHOD(void, reset, (), (override));
 };
@@ -34,7 +35,7 @@ public:
 class MockRequestHandler : public http::IRequestHandler {
 public:
     MOCK_METHOD((std::expected<http::Response, std::error_code>), handleRequest, (const http::Request&), (override));
-    MOCK_METHOD(http::Response, handleError, (), (override));
+    MOCK_METHOD(http::Response, handleError, (http::StatusCode), (override));
 };
 
 class MockResponseWriter : public http::IResponseWriter {
