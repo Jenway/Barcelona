@@ -2,47 +2,111 @@
 #include "FileUtils.hpp"
 #include "Error.hpp"
 #include "FileDescriptor.hpp"
+#include <expected>
 #include <fcntl.h>
+#include <filesystem>
 #include <map>
+#include <string>
+#include <system_error>
 
 namespace utils {
 
+// Helper: convert a single hex digit to integer, or -1 on invalid
+static int hexDigit(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'a' && c <= 'f')
+        return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+    return -1;
+}
+
+// URL-decode a percent-encoded string in-place (returns false on invalid encoding)
+bool url_decode(std::string& s)
+{
+    std::string result;
+    result.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (s[i] == '%' && i + 2 < s.size()) {
+            int hi = hexDigit(s[i + 1]);
+            int lo = hexDigit(s[i + 2]);
+            if (hi < 0 || lo < 0)
+                return false;
+            char decoded = static_cast<char>((hi << 4) | lo);
+            result.push_back(decoded);
+            i += 2;
+        } else if (s[i] == '+') {
+            result.push_back(' ');
+        } else {
+            result.push_back(s[i]);
+        }
+    }
+    s.swap(result);
+    return true;
+}
+
+// Normalize and sanitize a URI path (removes query, fragment, decodes percent-encoding)
+auto normalizeUriPath(std::string_view raw_uri)
+    -> std::expected<std::string, std::error_code>
+{
+    // Must start with '/'
+    if (raw_uri.empty() || raw_uri.front() != '/')
+        return std::unexpected(std::make_error_code(std::errc::invalid_argument));
+
+    // Strip query and fragment
+    auto end_pos = raw_uri.find_first_of("?#");
+    std::string path = std::string(raw_uri.substr(0, end_pos));
+
+    // URL-decode
+    if (!url_decode(path))
+        return std::unexpected(std::make_error_code(std::errc::illegal_byte_sequence));
+
+    // Collapse redundant slashes
+    size_t pos;
+    while ((pos = path.find("//")) != std::string::npos)
+        path.erase(pos, 1);
+
+    // Use filesystem normalization
+    std::filesystem::path fs_path = std::filesystem::path(path).lexically_normal();
+
+    // Prevent escaping above root
+    auto s = fs_path.generic_string();
+    if (s.empty() || s.rfind("..", 0) == 0)
+        return std::unexpected(std::make_error_code(std::errc::permission_denied));
+
+    return s;
+}
+
+// Resolve a safe filesystem path under doc_root
+// index_file should be e.g. "index.html"
 auto resolveSafePath(
     const std::filesystem::path& doc_root,
-    const std::string& uri,
-    const std::string& index_file)
+    std::string_view raw_uri,
+    std::string_view index_file)
     -> std::expected<std::filesystem::path, std::error_code>
 {
-    // 1. 基础验证
-    if (uri.empty() || uri[0] != '/' || uri.find("..") != std::string::npos) {
-        return std::unexpected(std::make_error_code(std::errc::invalid_argument));
-    }
 
-    // 2. 拼接相对路径
-    std::filesystem::path relative_path;
-    if (uri == "/") {
-        relative_path = index_file;
-    } else {
-        relative_path = uri.substr(1); // 移除开头的 '/'
-    }
+    std::string rel = std::string(raw_uri);
+    if (rel == "/" || rel.empty())
+        rel = index_file;
+    else if (rel.front() == '/')
+        rel.erase(0, 1);
 
-    // 3. 组合并规范化路径
-    // lexically_normal 会处理 "." 和 ".." 等，但它不访问文件系统
-    auto final_path = (doc_root / relative_path).lexically_normal();
-
-    // 4. 最关键的安全检查：防止路径遍历攻击
-    // 我们通过比较两个路径的公共前缀长度来确保 final_path 仍然在 doc_root 内部。
-    // std::distance(mismatch(...)) 计算了公共部分的长度。
-    auto const common_len = std::distance(
-        doc_root.begin(),
-        std::mismatch(doc_root.begin(), doc_root.end(), final_path.begin()).first);
-
-    if (static_cast<size_t>(common_len) < std::distance(doc_root.begin(), doc_root.end())) {
-        // 如果公共部分的长度小于 doc_root 的长度，说明路径已经逃逸出去了。
+    if (rel.find("..") != std::string::npos) {
         return std::unexpected(std::make_error_code(std::errc::permission_denied));
     }
+    // Combine and normalize again
+    std::filesystem::path full = (doc_root / rel).lexically_normal();
 
-    return final_path;
+    // Ensure full stays within doc_root
+    auto [it_root, it_full] = std::mismatch(
+        doc_root.begin(), doc_root.end(), full.begin());
+    if (it_root != doc_root.end())
+        return std::unexpected(std::make_error_code(std::errc::permission_denied));
+
+    return full;
 }
 
 auto getFileInfo(const std::filesystem::path& path) -> std::expected<FileInfo, std::error_code>
@@ -57,7 +121,6 @@ auto getFileInfo(const std::filesystem::path& path) -> std::expected<FileInfo, s
         return std::unexpected(std::make_error_code(std::errc::no_such_file_or_directory));
     }
     if (!std::filesystem::is_regular_file(status)) {
-        // 对于目录、符号链接等，我们视为一种“权限不足”的错误
         return std::unexpected(std::make_error_code(std::errc::permission_denied));
     }
 

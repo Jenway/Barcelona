@@ -31,7 +31,9 @@ add_executable(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE
     webserv::core
+    webserv::config
     webserv::tcp
+    webserv::http
     webserv::logger
 )
 target_precompile_headers(${PROJECT_NAME} PRIVATE "lib/logger/include/logger.hpp")

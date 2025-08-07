@@ -14,7 +14,9 @@ namespace http::responses {
  * @return 一个配置好的 http::Response 对象。
  */
 template <StatusCode Code>
-auto createStockResponse() -> Response
+auto
+
+createStockResponse() -> Response
 {
     Response response;
 
@@ -56,4 +58,12 @@ auto createJson(std::string json_body) -> Response;
  * @return 一个配置好的 http::Response 对象。
  */
 auto createFromFile(const utils::FileInfo& file_info, int fd) -> Response;
+
+/**
+ * @brief 为 HEAD 请求，根据文件信息创建一个只有头部的 200 OK 响应。
+ *
+ * @param file_info 包含了文件大小和路径的 FileInfo 结构体。
+ * @return 一个包含正确头部但没有主体的 http::Response 对象。
+ */
+auto createHeaderOnly(const utils::FileInfo& file_info) -> Response;
 } // namespace http::responses

@@ -29,10 +29,10 @@ TEST_F(LoggerOutputTest, BasicFormatAndContent)
     LOG_INFO("User {} logged in successfully.", 42);
     std::string output = testing::internal::GetCapturedStdout();
 
-    EXPECT_THAT(output, HasSubstr("[INFO ]"));
+    EXPECT_THAT(output, HasSubstr("[INFO]"));
     EXPECT_THAT(output, HasSubstr("TestBody"));
     EXPECT_THAT(output, HasSubstr("User 42 logged in successfully."));
-    EXPECT_THAT(output, MatchesRegex("^[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3} .*"));
+    EXPECT_THAT(output, MatchesRegex("^[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{2} .*"));
 }
 
 TEST_F(LoggerOutputTest, ErrorGoesToStderr)

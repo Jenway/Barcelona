@@ -1,6 +1,6 @@
-#include "Config.hpp"
 #include "Error.hpp"
 #include "ErrorCode.hpp"
+#include "config/Config.hpp"
 
 #include "nlohmann/json.hpp"
 

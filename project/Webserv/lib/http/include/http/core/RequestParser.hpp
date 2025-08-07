@@ -9,7 +9,7 @@
 
 namespace http {
 
-class RequestParser : IRequestParser {
+class RequestParser : public IRequestParser {
 public:
     RequestParser();
 

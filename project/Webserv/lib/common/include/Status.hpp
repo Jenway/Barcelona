@@ -73,8 +73,10 @@ namespace protocol {
 namespace http {
 enum class Method : uint8_t {
     GET,
+    HEAD,
+    DELETE,
     POST,
-    DELETE
+    PUT,
 };
 }
 

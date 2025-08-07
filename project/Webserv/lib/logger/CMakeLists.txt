@@ -15,5 +15,6 @@ target_include_directories(logger INTERFACE
 target_link_libraries(logger INTERFACE
     webserv::common
     webserv::utils
+    magic_enum::magic_enum
     fmt::fmt
 )

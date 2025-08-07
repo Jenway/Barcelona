@@ -60,4 +60,18 @@ auto createFromFile(const utils::FileInfo& file_info, int fd) -> Response
     return response;
 }
 
+auto createHeaderOnly(const utils::FileInfo& file_info) -> Response
+{
+    // 1. 使用模板工厂创建 200 OK 的基础
+    Response response = createStockResponse<StatusCode::Ok>();
+
+    // 2. 添加与 GET 完全相同的头部
+    response.headers["Content-Type"] = utils::getMimeType(file_info.full_path);
+    response.headers["Content-Length"] = std::to_string(file_info.size);
+    response.headers["Connection"] = "close";
+
+    // 3. 关键：不设置 body！主体将保持默认的空 vector<char>。
+    return response;
+}
+
 } // namespace http::responses

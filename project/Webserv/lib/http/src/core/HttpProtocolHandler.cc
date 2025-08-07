@@ -15,7 +15,7 @@ namespace http {
 HttpProtocolHandler::HttpProtocolHandler(
     std::unique_ptr<IRequestParser> parser,
     std::unique_ptr<IResponseWriter> writer,
-    std::unique_ptr<IRequestDispatcher> request_router)
+    std::shared_ptr<IRequestDispatcher> request_router)
     : _parser(std::move(parser))
     , _request_router(std::move(request_router))
     , _response_writer(std::move(writer))

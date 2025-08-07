@@ -1,4 +1,5 @@
 #include "http/core/RequestParser.hpp"
+#include "FileUtils.hpp"
 #include <expected>
 #include <magic_enum/magic_enum.hpp>
 #include <sstream>
@@ -95,6 +96,13 @@ auto RequestParser::parseRequestLine() -> std::expected<ParseResult, StatusCode>
     if (ss.fail() || !ss.eof()) {
         return std::unexpected(StatusCode::BadRequest);
     }
+    auto normalized_uri_or_error = utils::normalizeUriPath(_request.uri);
+    if (!normalized_uri_or_error) {
+        // 如果规范化失败（例如检测到路径遍历），返回 400 Bad Request
+        return std::unexpected(StatusCode::BadRequest);
+    }
+    // 将请求中的 URI 替换为干净的版本
+    _request.uri = std::move(*normalized_uri_or_error);
 
     const auto method_opt = magic_enum::enum_cast<http::Method>(method_str);
     if (!method_opt) {

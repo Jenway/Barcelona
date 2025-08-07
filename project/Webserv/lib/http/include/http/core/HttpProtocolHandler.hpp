@@ -16,7 +16,7 @@ public:
     explicit HttpProtocolHandler(
         std::unique_ptr<IRequestParser> parser,
         std::unique_ptr<IResponseWriter> writer,
-        std::unique_ptr<IRequestDispatcher> request_router);
+        std::shared_ptr<IRequestDispatcher> request_router);
     ~HttpProtocolHandler() override = default;
 
     // --- IHandler 接口实现 ---
@@ -41,7 +41,7 @@ private:
     State _state = State::WaitingForHeaders;
 
     std::unique_ptr<IRequestParser> _parser;
-    std::unique_ptr<IRequestDispatcher> _request_router;
+    std::shared_ptr<IRequestDispatcher> _request_router;
     std::unique_ptr<IResponseWriter> _response_writer;
 
     std::string _serialized_headers;

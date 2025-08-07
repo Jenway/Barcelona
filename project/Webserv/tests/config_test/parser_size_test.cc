@@ -1,4 +1,4 @@
-#include "Config.hpp"
+#include "config/Config.hpp"
 #include <fmt/format.h>
 #include <gtest/gtest.h>
 

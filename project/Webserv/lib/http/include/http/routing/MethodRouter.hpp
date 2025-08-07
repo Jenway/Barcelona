@@ -4,6 +4,8 @@
 #include <map>
 #include <memory>
 
+namespace http {
+
 class MethodRouter : public http::IRequestHandler {
 public:
     // 为特定的方法注册一个处理器
@@ -15,3 +17,4 @@ public:
 private:
     std::map<http::Method, std::unique_ptr<http::IRequestHandler>> _handlers;
 };
+}

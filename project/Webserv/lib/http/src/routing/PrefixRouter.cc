@@ -27,4 +27,4 @@ auto PrefixRouter::handleRequest(const http::Request& request) -> std::expected<
     // 如果这个 PrefixRouter 内部没有任何匹配，它就返回 404
     return http::responses::createStockResponse<http::StatusCode::NotFound>();
 }
-}
+} // namespace http

@@ -1,6 +1,11 @@
 // in lib/http/src/MethodRouter.cc
 #include "http/routing/MethodRouter.hpp"
+#include "Status.hpp"
 #include "http/utils/ResponseFactory.hpp"
+#include "logger.hpp"
+#include <magic_enum/magic_enum.hpp>
+
+namespace http {
 
 void MethodRouter::addHandler(http::Method method, std::unique_ptr<http::IRequestHandler> handler)
 {
@@ -14,7 +19,7 @@ auto MethodRouter::handleRequest(const http::Request& request) -> std::expected<
         // 如果找到了，就委托给对应的子处理器
         return it->second->handleRequest(request);
     }
-
     // 如果这个 MethodRouter 不支持该方法，返回 405 Method Not Allowed
     return http::responses::createStockResponse<http::StatusCode::MethodNotAllowed>();
+}
 }

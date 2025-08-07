@@ -16,6 +16,7 @@ target_include_directories(http_lib PUBLIC
 target_link_libraries(http_lib
     PUBLIC
     webserv::common
+    webserv::config
     webserv::io
     PRIVATE
     logger

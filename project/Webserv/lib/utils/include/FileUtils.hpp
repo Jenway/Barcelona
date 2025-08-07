@@ -17,6 +17,20 @@ struct FileInfo {
 };
 
 /**
+ * @brief 对 URI 路径进行规范化和安全检查。
+ *
+ * 该函数执行以下操作：
+ * 1.  使用 std::filesystem::path 解析并处理路径中的 "." 和 ".."。
+ * 2.  确保规范化后的路径不会以 ".." 开头，防止路径遍历。
+ * 3.  解码 URL 编码的字符 (例如, %20 -> ' ') (可选，但推荐)。
+ *
+ * @param uri_path 从 HTTP 请求中解析出的原始 URI 路径。
+ * @return 成功时返回一个干净、安全的 URI 路径字符串，失败时返回错误码。
+ */
+auto normalizeUriPath(std::string_view raw_uri)
+    -> std::expected<std::string, std::error_code>;
+
+/**
  * @brief 安全地将 URI 解析为文件系统路径，并验证其合法性。
  *
  * 该函数执行以下关键操作：
@@ -32,8 +46,8 @@ struct FileInfo {
  */
 auto resolveSafePath(
     const std::filesystem::path& doc_root,
-    const std::string& uri,
-    const std::string& index_file = "index.html")
+    std::string_view raw_uri,
+    std::string_view index_file = "index.html")
     -> std::expected<std::filesystem::path, std::error_code>;
 
 /**
