@@ -30,6 +30,22 @@ Connection::Connection(Socket socket, std::unique_ptr<protocol::IHandler> handle
 
 auto Connection::onReadable() -> std::expected<void, std::system_error>
 {
+    // **关键修改 3: 处理 CLOSING 状态**
+    if (state_ == State::CLOSING) {
+        // 在这个状态下，我们只读取并丢弃数据，以完成 TCP 的四次挥手
+        auto read_result = source_->read(read_buffer_);
+        if (read_result) {
+            auto [status, bytes_read] = *read_result;
+            if (status == ReadStatus::Eof) {
+                // 当我们读到 EOF 时，意味着客户端也关闭了写端，
+                // 四次挥手完成，现在可以安全地彻底关闭套接字了。
+                LOG_TRACE("fd={}: EOF received during CLOSING state. Connection fully closed.", socket_.getFd());
+                state_ = State::CLOSED;
+            }
+        }
+        // 我们不需要更新协议状态，因为协议已经结束了
+        return {};
+    }
     LOG_TRACE("fd={}: onReadable called.", socket_.getFd());
 
     auto read_result = source_->read(read_buffer_);
@@ -97,8 +113,20 @@ void Connection::updateStateFromProtocol()
         state_ = State::WRITING;
         break;
     case ProtoStatus::Finished:
-        LOG_TRACE("Protocol finished on fd {}. Closing connection.", socket_.getFd());
-        state_ = State::CLOSED; // 协议完成，直接关闭
+        LOG_TRACE("Protocol finished on fd {}. Initiating graceful shutdown.", socket_.getFd());
+
+        // **关键修改 1: 不再直接跳到 CLOSED**
+        // 而是进入一个新的 CLOSING 状态
+        state_ = State::CLOSING;
+
+        // **立即半关闭写端**
+        // 这会向客户端发送一个 FIN 包，告诉它我们不会再发送任何数据了。
+        // 这给了客户端机会去读取我们刚刚发送的响应 (比如 413)。
+        if (auto res = socket_.shutdownWrite(); !res) {
+            LOG_WARN("Failed to shutdown write on fd {}: {}", socket_.getFd(), res.error());
+            // 如果 shutdown 失败，立即强制关闭
+            state_ = State::CLOSED;
+        }
         break;
 
     case ProtoStatus::Error:
@@ -120,6 +148,7 @@ auto Connection::interestedEvents() const -> Event
     case State::WRITING:
         return Event::Write;
     case State::CLOSING:
+        return Event::Read;
     case State::CLOSED:
     default:
         return Event::None;

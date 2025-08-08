@@ -3,6 +3,7 @@
 #include "Channel.hpp"
 #include "Error.hpp"
 #include "IProtocolHandler.hpp"
+#include "RouterBuilder.hpp"
 #include "Socket.hpp"
 #include "TcpSinker.hpp"
 #include "TcpSource.hpp"
@@ -12,7 +13,6 @@
 #include "http/core/HttpProtocolHandler.hpp"
 #include "http/core/RequestParser.hpp"
 #include "http/core/ResponseWriter.hpp"
-#include "http/routing/RouterBuilder.hpp"
 #include "logger.hpp"
 #include <csignal>
 #include <expected>
@@ -95,9 +95,11 @@ void Server::onNewConnection(Socket&& socket)
 {
     LOG_INFO("Accepted new connection: fd={}", socket.getFd());
     auto clientFd = socket.getFd();
+    const auto& server_config = config_.servers[0];
+    size_t max_body_size = server_config.client_max_body_size;
 
     auto handler = std::make_unique<http::HttpProtocolHandler>(
-        std::unique_ptr<http::IRequestParser>(new http::RequestParser()),
+        std::unique_ptr<http::IRequestParser>(new http::RequestParser(max_body_size)),
         std::unique_ptr<http::IResponseWriter>(new http::ResponseWriter()),
         _http_dispatcher);
 

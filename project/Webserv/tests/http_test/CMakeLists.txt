@@ -1,6 +1,6 @@
 # /tests/http_test/CMakeLists.txt
 
-file(GLOB_RECURSE TEST_HTTP_SOURCES "*.cc")
+file(GLOB_RECURSE TEST_HTTP_SOURCES "*/*.cc")
 
 add_executable(http_test
     ${TEST_HTTP_SOURCES}

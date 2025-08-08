@@ -175,6 +175,22 @@ TEST(TcpIntegrationTest, FullPingPongCycle)
 
     ASSERT_GT(bytes_read, 0);
     EXPECT_EQ(std::string_view(buffer, bytes_read), "pong");
+    ::shutdown(client_socket.getFd(), SHUT_WR);
+
+    // **新增：12. 再次触发 onReadable，让服务器处理 EOF**
+    //    服务器在 CLOSING 状态下，收到读事件 (EOF) 后，
+    //    就会将自己的状态切换到 CLOSED。
+    //    我们需要给网络和事件循环一点时间来传递这个 EOF 事件。
+    bool server_closed = false;
+    for (int i = 0; i < 100; ++i) { // Retry up to 1 second
+        connection.onReadable(); // 触发服务器端的 EOF 处理
+        if (connection.isClosed()) {
+            server_closed = true;
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    ASSERT_TRUE(server_closed) << "Connection did not transition to CLOSED after client shutdown.";
 
     // 11. 此时 Connection 应该完成了
     ASSERT_TRUE(connection.isClosed());

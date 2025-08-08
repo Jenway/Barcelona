@@ -16,7 +16,7 @@ public:
     void onAccept();
 
 private:
-    explicit Acceptor(Socket listen_socket);
-    Socket listen_socket_;
+    explicit Acceptor(utils::FileDescriptor listen_fd);
+    utils::FileDescriptor listen_socket_;
     AcceptHandler acceptHandler_;
 };

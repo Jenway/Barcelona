@@ -28,6 +28,7 @@ add_subdirectory(tests)
 add_executable(${PROJECT_NAME}
     src/main.cc
     src/server.cc
+    src/RouterBuilder.cc
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE
     webserv::core

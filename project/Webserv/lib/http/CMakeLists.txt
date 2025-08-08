@@ -1,23 +1,19 @@
 # lib/http/CMakeLists.txt
 
-file(GLOB_RECURSE HTTP_SOURCES "src/*.cc")
+# 1. 声明一个纯接口的聚合库
+add_library(http_agg INTERFACE)
+add_library(webserv::http ALIAS http_agg)
 
-add_library(http_lib
-    ${HTTP_SOURCES}
-)
-add_library(webserv::http ALIAS http_lib)
-
-target_compile_definitions(http_lib PUBLIC MAGIC_ENUM_RANGE_MAX=1024)
-
-target_include_directories(http_lib PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+# 2. 添加对内部分散模块的依赖
+target_link_libraries(http_agg INTERFACE
+    webserv::http_protocol
+    webserv::http_dispatch
+    webserv::http_handlers
 )
 
-target_link_libraries(http_lib
-    PUBLIC
-    webserv::common
-    webserv::config
-    webserv::io
-    PRIVATE
-    logger
-)
+# 3. 递归地添加子模块
+add_subdirectory(protocol)
+add_subdirectory(routing)
+add_subdirectory(handlers)
+add_subdirectory(common)
+add_subdirectory(utils)
