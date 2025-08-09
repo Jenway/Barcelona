@@ -149,3 +149,78 @@ def test_keep_alive(session: requests.Session):
     finally:
         file1["path"].unlink(missing_ok=True)
         file2["path"].unlink(missing_ok=True)
+
+def test_chunked_upload(session: requests.Session, upload_resource: dict):
+    """
+    Tests if the server can correctly receive a chunked request body.
+    """
+    print("\n--- Testing Chunked Upload ---")
+    
+    target_url = f"{Config.BASE_URL}/upload/{upload_resource['name']}"
+    file_content = upload_resource["content"]
+    server_path = upload_resource["path"]
+
+    # 1. 创建一个数据生成器
+    #    requests 库看到 data 是一个生成器，就会自动使用 chunked 编码
+    def chunk_generator():
+        # 我们故意把数据分成不均匀的小块
+        chunk1 = file_content[:5]
+        chunk2 = file_content[5:15]
+        chunk3 = file_content[15:]
+        
+        print(f"  -> Sending chunk 1: '{chunk1}' ({len(chunk1)} bytes)")
+        yield chunk1.encode('utf-8')
+        time.sleep(0.1) # 稍微暂停，模拟网络延迟
+        
+        print(f"  -> Sending chunk 2: '{chunk2}' ({len(chunk2)} bytes)")
+        yield chunk2.encode('utf-8')
+        time.sleep(0.1)
+        
+        print(f"  -> Sending chunk 3: '{chunk3}' ({len(chunk3)} bytes)")
+        yield chunk3.encode('utf-8')
+        print("  -> Finished sending chunks.")
+
+    # 2. 发起请求，将生成器作为 data 参数
+    #    注意：我们不能在这里设置 Content-Length，requests 会自动处理
+    response = make_request(session, 'post', target_url, data=chunk_generator())
+
+    # 3. 验证结果
+    assert response.status_code == 201, f"Expected 201 Created for chunked upload, but got {response.status_code}"
+    
+    # 验证服务器上文件的内容是否与我们分块发送的内容完全一致
+    assert server_path.exists(), "File from chunked upload was not found on the server"
+    assert server_path.read_text() == file_content, "Content of reassembled file does not match original"
+
+    print("✅ test_chunked_upload: PASSED")
+
+
+# --- (可选，但推荐) 为 body size limit 测试也增加一个 chunked 版本 ---
+
+def test_chunked_body_size_limit(session: requests.Session):
+    """
+    Tests if the body size limit is enforced during a chunked upload.
+    """
+    print("\n--- Testing Chunked Body Size Limit ---")
+    
+    url = f"{Config.BASE_URL}/upload/large_chunked_file.bin"
+    
+    # 一个会产生超过 MAX_BODY_SIZE 数据的生成器
+    def large_chunk_generator():
+        # 发送多个小块，直到总大小超过限制
+        total_sent = 0
+        chunk_size = 1024 * 1024 # 1MB chunks
+        
+        while total_sent <= Config.MAX_BODY_SIZE:
+            yield b'a' * chunk_size
+            total_sent += chunk_size
+            
+    response = make_request(session, 'post', url, data=large_chunk_generator())
+    
+    # 我们期望服务器在接收到超过限制的数据后，
+    # 能立刻返回 413 并关闭连接。
+    assert response.status_code == 413, f"Expected 413 for oversized chunked upload, but got {response.status_code}"
+    
+    # 清理可能被部分创建的文件
+    (Config.UPLOAD_DIR / "large_chunked_file.bin").unlink(missing_ok=True)
+    
+    print("✅ test_chunked_body_size_limit: PASSED")

@@ -51,6 +51,14 @@ public:
         return temp_fd;
     }
 
+    void close()
+    {
+        if (isValid()) {
+            ::close(_fd);
+        }
+        _fd = -1;
+    }
+
 private:
     int _fd = -1;
 };

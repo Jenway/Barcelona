@@ -23,8 +23,11 @@ private:
         RequestLine,
         Headers,
         Body,
+        ChunkedBody,
+        ChunkedTrailer,
         Completed
     };
+
     enum class ParseResult : uint8_t {
         Success,
         Incomplete
@@ -32,7 +35,9 @@ private:
     auto parseRequestLine() -> std::expected<ParseResult, StatusCode>;
     auto parseHeaders() -> std::expected<ParseResult, StatusCode>;
     auto parseBody() -> std::expected<ParseResult, StatusCode>;
+    auto parseChunkedBody() -> std::expected<ParseResult, StatusCode>;
 
+    size_t _chunk_size_remaining = 0;
     Step _step;
     size_t _max_body_size;
     bool _client_wants_keep_alive = false;

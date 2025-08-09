@@ -5,6 +5,8 @@
 #include "config/Config.hpp"
 #include "http/common/Message.hpp"
 #include "http/handlers//FunctionHandler.hpp"
+#include "http/handlers/CgiHandler.hpp"
+#include "http/handlers/DefaultCgiRunner.hpp"
 #include "http/handlers/RedirectHandler.hpp"
 #include "http/handlers/StaticFileHandler.hpp"
 #include "http/handlers/UploadHandler.hpp"
@@ -33,11 +35,29 @@ auto RouterBuilder::build(const ServerConfig& server_config) -> std::unique_ptr<
         // 3. 为每个 location 创建一个专用的处理器
         std::unique_ptr<IRequestHandler> location_handler;
 
+        std::filesystem::path document_root = loc_conf.alias.value_or(server_config.root);
+
         if (loc_conf.return_directive) {
             // --- Case A: 这是一个重定向 location ---
             const auto& redir = *loc_conf.return_directive;
             location_handler = std::make_unique<RedirectHandler>(redir.code, redir.url);
+        } else if (loc_conf.cgi_pass) {
+            // --- Case B: **这是一个 CGI location！** ---
 
+            // 1. 创建一个 CGI Runner 的实例 (我们目前只有 DefaultCgiRunner)
+            auto cgi_runner = std::make_shared<DefaultCgiRunner>();
+
+            // 2. 创建 CgiHandler，并注入 Runner 和配置
+            auto cgi_service = std::make_shared<CgiHandler>(
+                document_root, // 脚本的根目录
+                *loc_conf.cgi_pass, // 解释器路径
+                cgi_runner);
+
+            // 3. 将其包装起来，以便 MethodRouter 使用
+            auto cgi_lambda = [cgi_service](const auto& r) {
+                return cgi_service->handleRequest(r);
+            };
+            location_handler = std::make_unique<ResponseFunctionHandler<decltype(cgi_lambda)>>(cgi_lambda);
         } else {
             // --- Case B: 这是一个基于文件系统的 location (常规) ---
             auto method_router = std::make_unique<routing::MethodRouter>();

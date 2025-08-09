@@ -181,3 +181,114 @@ TEST_F(RequestParserTest, HandlesRequestWithNoDoubleCRLF)
     ASSERT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), State::Parsing);
 }
+
+// ===============================
+// --- Transfer-Encoding: chunked 测试 ---
+// ===============================
+
+TEST_F(RequestParserTest, HandlesSimpleChunkedRequest)
+{
+    const std::string request_str = "POST /chunked-data HTTP/1.1\r\n"
+                                    "Host: example.com\r\n"
+                                    "Transfer-Encoding: chunked\r\n\r\n"
+                                    "7\r\n" // 块 1: 7 字节
+                                    "Mozilla\r\n"
+                                    "9\r\n" // 块 2: 9 字节
+                                    "Developer\r\n"
+                                    "0\r\n" // 结束块
+                                    "\r\n";
+
+    auto res = parser->parse(request_str);
+    ASSERT_TRUE(res.has_value()) << "Parser failed with: " << magic_enum::enum_name(res.error());
+    EXPECT_EQ(res.value(), State::Completed);
+
+    const auto& req = parser->getRequest();
+    EXPECT_EQ(req.method, http::Method::POST);
+
+    const std::string expected_body = "MozillaDeveloper";
+    EXPECT_EQ(std::string(req.body.begin(), req.body.end()), expected_body);
+    // 对于 chunked 请求，不应该有 Content-Length 头
+    EXPECT_FALSE(req.headers.contains("Content-Length"));
+}
+
+TEST_F(RequestParserTest, HandlesFragmentedChunkedRequest)
+{
+    // 模拟数据被分成多个 TCP 包到达
+    std::vector<std::string> chunks = {
+        "POST /chunked-data HTTP/1.1\r\n",
+        "Host: example.com\r\n",
+        "Transfer-Encoding: chunked\r\n\r\n",
+        "4\r\n", // 第一个块的大小
+        "Wiki\r\n", // 第一个块的数据
+        "5\r\n", // 第二个块的大小
+        "pedia\r", // 第二个块的数据 (不完整)
+        "\n", // 第二个块的 \n
+        "E\r\n", // 第三个块的大小 (E = 14)
+        " in\r\n\r\nchunks.\r", // 第三个块的数据 (跨越多行)
+        "\n",
+        "0\r\n\r\n" // 结束块
+    };
+
+    // 前几段应该都是 Parsing
+    for (size_t i = 0; i < chunks.size() - 1; ++i) {
+        auto res = parser->parse(chunks[i]);
+        ASSERT_TRUE(res.has_value()) << "Parser failed at chunk " << i;
+        EXPECT_EQ(res.value(), State::Parsing);
+    }
+
+    // 最后一段数据应该完成解析
+    auto res = parser->parse(chunks.back());
+    ASSERT_TRUE(res.has_value());
+    EXPECT_EQ(res.value(), State::Completed);
+
+    const auto& req = parser->getRequest();
+    const std::string expected_body = "Wikipedia in\r\n\r\nchunks.";
+    EXPECT_EQ(std::string(req.body.begin(), req.body.end()), expected_body);
+}
+
+TEST_F(RequestParserTest, RejectsInvalidChunkedFormat)
+{
+    // 无效的十六进制大小
+    const std::string bad_size_req = "POST /bad HTTP/1.1\r\n"
+                                     "Transfer-Encoding: chunked\r\n\r\n"
+                                     "G\r\nInvalid\r\n";
+
+    // 块大小与实际数据长度不匹配
+    const std::string mismatch_size_req = "POST /bad HTTP/1.1\r\n"
+                                          "Transfer-Encoding: chunked\r\n\r\n"
+                                          "10\r\n" // 声明 16 字节
+                                          "only 12 bytes\r\n" // 实际只有 12 字节
+                                          "0\r\n\r\n";
+
+    parser->reset();
+    auto res1 = parser->parse(bad_size_req);
+    ASSERT_FALSE(res1.has_value());
+    EXPECT_EQ(res1.error(), http::StatusCode::BadRequest);
+
+    parser->reset();
+    // 对于大小不匹配，我们的实现会在等待更多数据时超时，
+    // 但在单元测试中，它会因为在数据结束后找不到 CRLF 而报错
+    auto res2 = parser->parse(mismatch_size_req);
+    ASSERT_FALSE(res2.has_value());
+    EXPECT_EQ(res2.error(), http::StatusCode::BadRequest);
+}
+
+TEST_F(RequestParserTest, EnforcesBodySizeLimitOnChunkedRequest)
+{
+    // 创建一个解析器，限制 body 为 10 字节
+    parser = std::make_unique<http::RequestParser>(10);
+
+    const std::string request_str = "POST /too-large HTTP/1.1\r\n"
+                                    "Transfer-Encoding: chunked\r\n\r\n"
+                                    "5\r\n" // 块 1: 5 字节
+                                    "12345\r\n"
+                                    "5\r\n" // 块 2: 5 字节 (总共 10 字节，刚好)
+                                    "67890\r\n"
+                                    "1\r\n" // 块 3: 1 字节 (总共 11 字节，超限！)
+                                    "a\r\n"
+                                    "0\r\n\r\n";
+
+    auto res = parser->parse(request_str);
+    ASSERT_FALSE(res.has_value());
+    EXPECT_EQ(res.error(), http::StatusCode::PayloadTooLarge);
+}

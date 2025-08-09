@@ -29,6 +29,16 @@
         {
           "path": "/api",
           "methods": [
+            "GET",
+            "POST"
+          ],
+          "cgi_pass": "/usr/bin/python3"
+        },
+        {
+          "path": "/guestbook.py",
+          "root": "/home/jenway/Barcelona/project/Webserv/www",
+          "methods": [
+            "GET",
             "POST"
           ],
           "cgi_pass": "/usr/bin/python3"

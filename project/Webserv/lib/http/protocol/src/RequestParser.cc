@@ -35,6 +35,7 @@ void RequestParser::reset()
     _buffer.clear();
     _request = {};
     _client_wants_keep_alive = false;
+    _chunk_size_remaining = 0;
 }
 
 auto RequestParser::getRequest() const -> const Request&
@@ -46,47 +47,72 @@ auto RequestParser::parse(std::string_view data) -> std::expected<IRequestParser
 {
     _buffer.append(data);
 
-    while (true) {
+    // **只要我们还在取得进展，就持续驱动状态机**
+    bool progress_made = true;
+    while (progress_made) {
+        progress_made = false;
+
+        // 记录进入循环前的 buffer 大小
+        size_t buffer_size_before = _buffer.size();
+
         std::expected<ParseResult, StatusCode> result;
 
         switch (_step) {
         case Step::RequestLine:
             result = parseRequestLine();
-            if (result && *result == ParseResult::Success) {
+            if (result && *result == ParseResult::Success)
                 _step = Step::Headers;
-            }
             break;
 
         case Step::Headers:
             result = parseHeaders();
             if (result && *result == ParseResult::Success) {
-                auto it = _request.headers.find("Content-Length");
-                if (it != _request.headers.end() && std::stoul(it->second) > 0) {
+                if (_request.headers.contains("Transfer-Encoding"))
+                    _step = Step::ChunkedBody;
+                else if (_request.headers.contains("Content-Length"))
                     _step = Step::Body;
-                } else {
+                else
                     _step = Step::Completed;
-                }
             }
             break;
 
         case Step::Body:
             result = parseBody();
-            if (result && *result == ParseResult::Success) {
+            if (result && *result == ParseResult::Success)
                 _step = Step::Completed;
-            }
+            break;
+
+        case Step::ChunkedBody:
+            result = parseChunkedBody();
+            if (result && *result == ParseResult::Success)
+                _step = Step::Completed;
             break;
 
         case Step::Completed:
             return IRequestParser::State::Completed;
         }
 
+        // --- 检查结果 ---
         if (!result) {
-            return std::unexpected(result.error());
+            return std::unexpected(result.error()); // 发生错误，立刻返回
         }
-        if (*result == ParseResult::Incomplete) {
-            return IRequestParser::State::Parsing;
+
+        // **如果子解析器消耗了数据，就说明取得了进展，主循环应该继续**
+        if (_buffer.size() < buffer_size_before) {
+            progress_made = true;
+        }
+
+        // 如果已经完成，也算取得了进展（以便下一次循环进入 Completed case）
+        if (_step == Step::Completed) {
+            progress_made = true;
         }
     }
+
+    // 如果循环结束 (没有取得任何进展)，则说明我们需要更多数据
+    if (_step == Step::Completed) {
+        return IRequestParser::State::Completed;
+    }
+    return IRequestParser::State::Parsing;
 }
 
 // --- 子步骤函数 ---
@@ -168,6 +194,17 @@ auto RequestParser::parseHeaders() -> std::expected<ParseResult, StatusCode>
 
         _request.headers[key] = value;
     }
+    if (auto it = _request.headers.find("Transfer-Encoding"); it != _request.headers.end()) {
+        if (iequal(it->second, "chunked")) {
+            // 如果是 chunked，我们准备进入 ChunkedBody 解析
+            // **注意：我们不再在这里返回 NotImplemented！**
+            // 我们将在主 `parse` 循环的 `if (result && *result == ParseResult::Success)`
+            // 之后，根据这个头来切换状态。
+        } else {
+            // 我们只支持 chunked，不支持其他 Transfer-Encoding
+            return std::unexpected(StatusCode::NotImplemented);
+        }
+    }
 
     // 检查 Content-Length 值的有效性
     if (auto it = _request.headers.find("Content-Length"); it != _request.headers.end()) {
@@ -180,12 +217,6 @@ auto RequestParser::parseHeaders() -> std::expected<ParseResult, StatusCode>
             // stoull 失败，说明 Content-Length 的值不是有效数字
             return std::unexpected(StatusCode::BadRequest);
         }
-    }
-
-    // 还可以检查 Transfer-Encoding: chunked 的情况，如果不支持，也在这里拒绝
-    if (_request.headers.contains("Transfer-Encoding")) {
-        // 假设我们还不支持 chunked，这是一个很好的返回点
-        return std::unexpected(StatusCode::NotImplemented);
     }
 
     const auto& req = _request; // for brevity
@@ -221,6 +252,128 @@ auto RequestParser::parseBody() -> std::expected<ParseResult, StatusCode>
     _buffer.erase(0, contentLength);
 
     return ParseResult::Success; // 成功
+}
+auto RequestParser::parseChunkedBody() -> std::expected<ParseResult, StatusCode>
+{
+    // Phase A: need a chunk-size line if we have no remaining bytes to read
+    if (_chunk_size_remaining == 0) {
+        if (_buffer.starts_with(CRLF)) {
+            _buffer.erase(0, CRLF.length());
+            return ParseResult::Incomplete;
+        }
+
+        auto pos = _buffer.find(CRLF);
+        if (pos == std::string::npos)
+            return ParseResult::Incomplete;
+
+        std::string size_line = std::string(_buffer.substr(0, pos));
+        _buffer.erase(0, pos + CRLF.length());
+
+        auto semi = size_line.find(';');
+        if (semi != std::string::npos)
+            size_line = size_line.substr(0, semi);
+        auto l = size_line.find_first_not_of(" \t");
+        auto r = size_line.find_last_not_of(" \t");
+        if (l == std::string::npos)
+            size_line.clear();
+        else
+            size_line = size_line.substr(l, r - l + 1);
+
+        size_t chunk_size = 0;
+        try {
+            chunk_size = std::stoul(size_line, nullptr, 16);
+        } catch (...) {
+            return std::unexpected(StatusCode::BadRequest);
+        }
+
+        _chunk_size_remaining = chunk_size;
+
+        if (_chunk_size_remaining == 0) {
+            if (_buffer.starts_with(CRLF)) {
+                _buffer.erase(0, CRLF.length());
+                return ParseResult::Success;
+            }
+            auto trailer_end = _buffer.find(DOUBLE_CRLF);
+            if (trailer_end != std::string::npos) {
+                _buffer.erase(0, trailer_end + DOUBLE_CRLF.length());
+                return ParseResult::Success;
+            }
+            return ParseResult::Incomplete;
+        }
+        return ParseResult::Incomplete;
+    }
+
+    // Phase B: reading chunk-data
+    // --- NEW: before consuming chunk_size bytes, check if there's an *early* CRLF within the
+    // declared chunk region that is followed by a complete and valid chunk-size line.
+    // If so, the declared chunk_size lied (sender ended the chunk earlier) => BadRequest.
+
+    // We will scan up to min(_chunk_size_remaining, _buffer.size()) for CRLF positions.
+    size_t scan_limit = std::min(_chunk_size_remaining, _buffer.size());
+    auto scan_pos = _buffer.find(CRLF);
+    while (scan_pos != std::string::npos && scan_pos < scan_limit) {
+        // potential CRLF found at scan_pos which is before declared end.
+        // See if what follows is a complete line terminated by CRLF.
+        size_t after = scan_pos + CRLF.size();
+        auto next_crlf = _buffer.find(CRLF, after);
+        if (next_crlf == std::string::npos) {
+            // next line incomplete -> can't decide yet; break out of scan loop
+            break;
+        }
+        // extract candidate size token
+        std::string potential_size = std::string(_buffer.substr(after, next_crlf - after));
+        auto semi = potential_size.find(';');
+        if (semi != std::string::npos)
+            potential_size = potential_size.substr(0, semi);
+        auto ll = potential_size.find_first_not_of(" \t");
+        auto rr = potential_size.find_last_not_of(" \t");
+        if (ll == std::string::npos)
+            potential_size.clear();
+        else
+            potential_size = potential_size.substr(ll, rr - ll + 1);
+
+        bool all_hex = !potential_size.empty() && std::all_of(potential_size.begin(), potential_size.end(), [](unsigned char c) {
+            return std::isxdigit(c);
+        });
+
+        if (all_hex) {
+            // Found CRLF before the declared chunk end, and what follows looks like a chunk-size line.
+            // This indicates the sender ended the chunk early -> protocol error.
+            return std::unexpected(StatusCode::BadRequest);
+        }
+        // else it's a CRLF inside data; look for next CRLF within the scan range
+        scan_pos = _buffer.find(CRLF, scan_pos + CRLF.size());
+    }
+
+    // If not enough data to reach declared chunk size, consume partial and wait
+    if (_buffer.size() < _chunk_size_remaining) {
+        _request.body.insert(_request.body.end(), _buffer.begin(), _buffer.end());
+        _chunk_size_remaining -= _buffer.size();
+        _buffer.clear();
+
+        if (_request.body.size() > _max_body_size) {
+            return std::unexpected(StatusCode::PayloadTooLarge);
+        }
+        return ParseResult::Incomplete;
+    }
+
+    // We have at least chunk_size bytes available. Read exactly that many.
+    _request.body.insert(_request.body.end(), _buffer.begin(), _buffer.begin() + _chunk_size_remaining);
+    _buffer.erase(0, _chunk_size_remaining);
+    _chunk_size_remaining = 0;
+
+    if (_request.body.size() > _max_body_size) {
+        return std::unexpected(StatusCode::PayloadTooLarge);
+    }
+
+    // After chunk-data, there MUST be a CRLF. If not enough bytes available, wait.
+    if (_buffer.size() < CRLF.size())
+        return ParseResult::Incomplete;
+    if (!_buffer.starts_with(CRLF))
+        return std::unexpected(StatusCode::BadRequest);
+
+    _buffer.erase(0, CRLF.size());
+    return ParseResult::Incomplete;
 }
 
 bool RequestParser::clientWantsKeepAlive() const
