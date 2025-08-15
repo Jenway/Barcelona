@@ -19,8 +19,8 @@ Projects from [42 School](https://42.fr), collected from Internet
 | 04    |                 MiniRT                  |                                               | 🧱 ing  | `Cub3d`             |
 | 04    |   [NetPractice](project/NetPractice)    | [04_netpractice](guide/04_netpractice.md)     | ✅ Done |                     |
 | 04&05 | [CPP_Modules 00-09](project/cpp_module) | [04_cpp](guide/04_CPP_Module/)                | ✅ Done |                     |
-| 05    |     [Inception](project\Inception)      | [05_inception](guide/05_inception.md)         | ✅ Done |                     |
-| 05    |                 Webserv                 |                                               | 🧱 ing  | `Ft_irc`            |
+| 05    |     [Inception](project/Inception/)     | [05_inception](guide/05_inception.md)         | ✅ Done |                     |
+| 05    |       [Webserv](project/Webserv/)       | [05_Webserv](guide/05_Webserv.md)             | ✅ Done | `Ft_irc`            |
 | 06    |            Ft_transcendence             |                                               | 🧱 ing  |                     |
 
 ## refer
