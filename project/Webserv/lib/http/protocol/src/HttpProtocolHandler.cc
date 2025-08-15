@@ -110,6 +110,7 @@ void HttpProtocolHandler::processResponse(Response response)
     }
 
     _response_writer->setKeepAlive(final_keep_alive);
+    LOG_INFO("Processing response: {}", response);
 
     _response_writer->bind_to(std::move(response));
     _state = State::SendingResponse;
@@ -123,7 +124,9 @@ void HttpProtocolHandler::generateResponse(StatusCode code)
 
 void HttpProtocolHandler::generateResponse()
 {
-    auto response_or_error = _request_router->handleRequest(_parser->getRequest());
+    auto req = _parser->getRequest();
+    auto response_or_error = _request_router->handleRequest(req);
+    LOG_INFO("Handling request: {}", req);
     if (response_or_error) {
         processResponse(std::move(*response_or_error));
     } else {

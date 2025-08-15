@@ -6,6 +6,8 @@
 #include <expected>
 #include <sys/epoll.h>
 
+#define TAG_FOR_BIND_TO_IMPL "bind_to_impl"
+
 inline auto tag_invoke(bind_to_t /*unused*/, Channel& ch, Poller& poller)
     -> std::expected<void, std::system_error>
 {

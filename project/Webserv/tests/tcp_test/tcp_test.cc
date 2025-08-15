@@ -30,7 +30,7 @@ TEST(TcpComponentsTest, AcceptorLifecycle)
     const char* ip = "127.0.0.1";
     constexpr uint16_t port = 8081;
 
-    auto acceptor_result = Acceptor::create(ip, port);
+    auto acceptor_result = Acceptor::create({ ip, port });
     ASSERT_TRUE(acceptor_result.has_value()) << "Failed to create acceptor: " << acceptor_result.error().what();
     Acceptor acceptor = std::move(*acceptor_result);
 
@@ -75,7 +75,7 @@ TEST(TcpComponentsTest, AcceptorLifecycle)
 TEST(TcpComponentsTest, InvalidAddressError)
 {
     const char* invalid_ip = "999.999.999.999";
-    auto acceptor_result = Acceptor::create(invalid_ip, 8082);
+    auto acceptor_result = Acceptor::create({ invalid_ip, 8082 });
 
     // 断言操作失败
     ASSERT_FALSE(acceptor_result.has_value());
@@ -87,7 +87,7 @@ TEST(TcpComponentsTest, InvalidAddressError)
 // 测试 3: 验证非阻塞 accept 在没有连接时的行为
 TEST(TcpComponentsTest, AcceptReturnsEagain)
 {
-    auto acceptor_result = Acceptor::create("127.0.0.1", 8083);
+    auto acceptor_result = Acceptor::create({ "127.0.0.1", 8083 });
     ASSERT_TRUE(acceptor_result.has_value());
     Acceptor acceptor = std::move(*acceptor_result);
 

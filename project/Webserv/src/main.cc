@@ -24,7 +24,7 @@ auto parseCommandLine(int argc, char* argv[]) -> std::expected<AppSettings, std:
         settings.configPath = argv[1];
     }
     if (argc >= 3) {
-        auto result = Logger::stringToLevel(argv[2]);
+        const auto result = Logger::stringToLevel(argv[2]);
         if (!result) {
             return std::unexpected("Invalid log level provided.");
         }

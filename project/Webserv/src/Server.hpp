@@ -3,6 +3,7 @@
 #include "Channel.hpp"
 #include "Connection.hpp"
 #include "Poller.hpp"
+#include "Reactor.hpp"
 #include "config/Config.hpp"
 #include "http/interfaces/IRequestHandler.hpp"
 #include <memory>
@@ -23,7 +24,6 @@ private:
     auto setupSignalHandling() -> std::expected<void, std::system_error>;
 
     void onNewConnection(Socket&& socket);
-    void removeConnection(int fd);
 
     int signal_fd_ = -1;
     std::unique_ptr<Channel> signal_channel_;
@@ -33,9 +33,9 @@ private:
     Poller poller_;
     std::unique_ptr<Channel> acceptorChannel_;
 
-    std::shared_ptr<http::IRequestDispatcher> _http_dispatcher;
+    std::vector<std::unique_ptr<Reactor>> reactors_;
+    std::vector<std::jthread> reactor_threads_;
+    int reactor_index_ = 0;
 
-    std::unordered_map<int, std::unique_ptr<Connection>> connections_;
-    std::unordered_map<int, std::unique_ptr<Channel>> channels_;
     bool _running { true };
 };

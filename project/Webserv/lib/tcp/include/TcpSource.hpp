@@ -5,7 +5,7 @@
 class TcpSource : public ISource {
 public:
     TcpSource() = default;
-    ~TcpSource() = default;
+    ~TcpSource() override = default;
     TcpSource(const TcpSource&) = delete;
     auto operator=(const TcpSource&) -> TcpSource& = delete;
     TcpSource(TcpSource&&) = delete;

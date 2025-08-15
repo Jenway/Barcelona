@@ -1,5 +1,6 @@
 #include "http/core/RequestParser.hpp"
 #include "FileUtils.hpp"
+#include "logger.hpp"
 #include <algorithm>
 #include <expected>
 #include <magic_enum/magic_enum.hpp>
@@ -220,18 +221,19 @@ auto RequestParser::parseHeaders() -> std::expected<ParseResult, StatusCode>
     }
 
     const auto& req = _request; // for brevity
+    _client_wants_keep_alive = true;
+    if (req.version == "HTTP/1.0") {
+        _client_wants_keep_alive = false; // HTTP/1.0 默认
+    }
     if (auto it = req.headers.find("Connection"); it != req.headers.end()) {
+        LOG_DEBUG("User specified : Connection header found: {}", it->second);
         if (iequal(it->second, "close")) {
             _client_wants_keep_alive = false;
         } else if (iequal(it->second, "keep-alive")) {
             _client_wants_keep_alive = true;
         }
-    } else if (req.version == "HTTP/1.1") {
-        _client_wants_keep_alive = true; // HTTP/1.1 默认
-    } else {
-        _client_wants_keep_alive = false; // HTTP/1.0 默认
     }
-
+    LOG_INFO("header parsed: {}", req.headers);
     return ParseResult::Success; // 成功
 }
 
@@ -255,12 +257,14 @@ auto RequestParser::parseBody() -> std::expected<ParseResult, StatusCode>
 }
 auto RequestParser::parseChunkedBody() -> std::expected<ParseResult, StatusCode>
 {
+    LOG_INFO("Parsing chunked body, current buffer size: {}", _buffer.size());
     // Phase A: need a chunk-size line if we have no remaining bytes to read
     if (_chunk_size_remaining == 0) {
-        if (_buffer.starts_with(CRLF)) {
+        while (_buffer.starts_with(CRLF)) {
             _buffer.erase(0, CRLF.length());
-            return ParseResult::Incomplete;
         }
+        if (_buffer.empty())
+            return ParseResult::Incomplete;
 
         auto pos = _buffer.find(CRLF);
         if (pos == std::string::npos)

@@ -62,7 +62,7 @@ TEST(TcpIntegrationTest, FullPingPongCycle)
     // ====================== 关键改动 1: 动态端口分配 ======================
     const char* ip = "127.0.0.1";
     // 绑定端口 0，让 OS 自动选择一个可用端口
-    auto acceptor_result = Acceptor::create(ip, 0);
+    auto acceptor_result = Acceptor::create({ ip, 0 });
     ASSERT_TRUE(acceptor_result.has_value()) << "Acceptor::create failed: " << acceptor_result.error().what();
     Acceptor acceptor = std::move(*acceptor_result);
 

@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
     src/main.cc
     src/server.cc
     src/RouterBuilder.cc
+    src/Reactor.cc
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE
     webserv::core

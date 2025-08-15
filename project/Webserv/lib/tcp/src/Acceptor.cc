@@ -1,6 +1,6 @@
 #include "Acceptor.hpp"
+#include "Endpoint.hpp"
 #include "Error.hpp"
-#include "ErrorCode.hpp"
 #include "logger.hpp"
 #include <arpa/inet.h>
 #include <expected>
@@ -12,7 +12,7 @@ Acceptor::Acceptor(utils::FileDescriptor listen_fd)
 {
 }
 
-auto Acceptor::create(const char* ip, uint16_t port) -> std::expected<Acceptor, std::system_error>
+auto Acceptor::create(const net::TcpEndpoint& endpoint) -> std::expected<Acceptor, std::system_error>
 {
     auto socket_result = Socket::create();
     if (!socket_result) {
@@ -23,23 +23,23 @@ auto Acceptor::create(const char* ip, uint16_t port) -> std::expected<Acceptor, 
 
     const int fd = temp_socket.getFd();
 
-    sockaddr_in server_addr {};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-    if (inet_pton(AF_INET, ip, &server_addr.sin_addr) <= 0) {
-        return error::to_unexpected(ErrorCode::Net_InvalidAddress,
-            fmt::format("Invalid IP address: '{}'", ip));
+    auto sockaddr_or_error = endpoint.toSockAddr();
+    if (!sockaddr_or_error) {
+        return error::to_unexpected(sockaddr_or_error.error(),
+            fmt::format("Invalid IP address format: '{}'", endpoint.getAddress()));
     }
+    auto server_addr = *sockaddr_or_error;
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): Required for C-style socket API interaction.
     if (::bind(fd, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr)) == -1) {
         return error::to_unexpected("bind failed");
     }
+
     if (::listen(fd, 128) == -1) {
         return error::to_unexpected("listen failed");
     }
 
-    LOG_INFO("Acceptor listening on {}:{}", ip, port);
+    LOG_INFO("Acceptor listening on {}:{}", endpoint.getAddress(), endpoint.getPort());
 
     return Acceptor(temp_socket.releaseFd());
 }
