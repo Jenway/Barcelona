@@ -1,0 +1,56 @@
+{
+  "servers": [
+    {
+      "listen": 8080,
+      "server_name": "localhost",
+      "root": "/home/jenway/Barcelona/project/Webserv/www",
+      "client_max_body_size": "2MB",
+      "error_pages": {
+        "404": "/404_custom.html"
+      },
+      "locations": [
+        {
+          "path": "/",
+          "methods": [
+            "GET"
+          ],
+          "index": "index.html",
+          "autoindex": false
+        },
+        {
+          "path": "/upload",
+          "alias": "/home/jenway/Barcelona/project/Webserv/www/uploads",
+          "methods": [
+            "POST",
+            "DELETE"
+          ],
+          "client_max_body_size": "10MB"
+        },
+        {
+          "path": "/api",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "cgi_pass": "/usr/bin/python3"
+        },
+        {
+          "path": "/guestbook.py",
+          "root": "/home/jenway/Barcelona/project/Webserv/www",
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "cgi_pass": "/usr/bin/python3"
+        },
+        {
+          "path": "/old",
+          "return": {
+            "code": 301,
+            "url": "/"
+          }
+        }
+      ]
+    }
+  ]
+}

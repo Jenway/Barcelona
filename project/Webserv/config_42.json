@@ -1,0 +1,52 @@
+{
+  "servers": [
+    {
+      "listen": 8080,
+      "server_name": "localhost",
+      "root": "/home/jenway/Barcelona/project/Webserv/www",
+      "error_pages": {
+        "404": "/404_custom.html",
+        "405": "/405_custom.html"
+      },
+      "locations": [
+        {
+          "path": "/",
+          "methods": [
+            "GET"
+          ],
+          "index": "index.html"
+        },
+        {
+          "path": "/put_test/",
+          "methods": [
+            "PUT"
+          ],
+          "alias": "/home/jenway/Barcelona/project/Webserv/www/uploads"
+        },
+        {
+          "path": "~.*\\.bla$",
+          "methods": [
+            "POST"
+          ],
+          "cgi_pass": "/home/jenway/Barcelona/project/Webserv/cgi_test"
+        },
+        {
+          "path": "/post_body",
+          "methods": [
+            "POST"
+          ],
+          "client_max_body_size": "100"
+        },
+        {
+          "path": "/directory/",
+          "methods": [
+            "GET"
+          ],
+          "root": "/home/jenway/Barcelona/project/Webserv/YoupiBanane",
+          "index": "youpi.bad_extension",
+          "autoindex": true
+        }
+      ]
+    }
+  ]
+}
