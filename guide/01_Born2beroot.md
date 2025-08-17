@@ -1,4 +1,4 @@
-Born2beRoot
+## Born2beRoot
 
 Summary: This document is a System Administration related exercise.
 
@@ -164,13 +164,6 @@ sr0                       11:0    1 1024M  0 rom
 
 - Set up a service of your choice that you think is useful (NGINX / Apache2 excluded!). During the defense, you will have to justify your choice.
 
-> [!NOTE]
-> To complete the bonus part, you have the possibility to set up extra services. In this case, you may open more ports to suit your needs. Of course, the UFW/Firewalld rules has to be adapted accordingly.
-
-> [!WARNING]
-> The bonus part will only be assessed if the mandatory part is PERFECT. Perfect means the mandatory part has been integrally done and works without malfunctioning. If you have not passed ALL the mandatory requirements, your bonus part will not be evaluated at all.
-
-
 ## Chapter VI Submission and peer-evaluation
 
 You only have to turn in a signature.txt file at the root of your Git repository. You must paste in it the signature of your machine’s virtual disk. To get this signature, you first have to open the default installation folder (it is the folder where your VMs are saved):
@@ -197,12 +190,4 @@ This is an example of what kind of output you will get:
 > [!WARNING]
 > It is of course FORBIDDEN to turn in your virtual machine in your Git repository. During the defense, the signature of the signature.txt file will be compared with the one of your virtual machine. If the two of them are not identical, your grade will be 0.
 
-
-``` PLAINTEXT
-0010 01 11 111 001 000  11 01 10  1 0000 01 1  1010 111 11 0 000
-011 00 1 0000  1 0000 0  01 0100 1 0 010 10 01 1 0  0001 0 010 000
-00 111 10  111 0010  001100 001100 001100
-```
-
-> can you read this?
 

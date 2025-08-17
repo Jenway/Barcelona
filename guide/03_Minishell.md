@@ -1,4 +1,4 @@
-Minishell
+## Minishell
 
 As beautiful as a shell
 
@@ -22,8 +22,6 @@ close to the human language.
 Thanks to Minishell, you’ll be able to travel through time and come back to problems people faced when Windows didn’t exist.
 
 ## Chapter III Mandatory part
-
-以下是将你提供的 `minishell` 项目信息转化为表格后的形式：
 
 | **项**                | **内容**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -51,13 +49,13 @@ Your shell should:
 - Handle ’ (single quote) which should prevent the shell from interpreting the metacharacters in the quoted sequence.
 - Handle " (double quote) which should prevent the shell from interpreting the metacharacters in the quoted sequence except for $ (dollar sign).
 - Implement redirections:
-    - < should redirect input.
-    - > should redirect output.
-    - << should be given a delimiter, then read the input until a line containing the delimiter is seen. However, it doesn’t have to update the history!
-    - >> should redirect output in append mode.
+    - `<` should redirect input.
+    - `>` should redirect output.
+    - `<<` should be given a delimiter, then read the input until a line containing the delimiter is seen. However, it doesn’t have to update the history!
+    - `>>` should redirect output in append mode.
 - Implement pipes (| character). The output of each command in the pipeline is connected to the input of the next command via a pipe.
 - Handle environment variables ($ followed by a sequence of characters) which should expand to their values.
-- Handle $? which should expand to the exit status of the most recently executed foreground pipeline.
+- Handle `$?` which should expand to the exit status of the most recently executed foreground pipeline.
 - Handle ctrl-C, ctrl-D and ctrl-\ which should behave like in bash.
 - In interactive mode:
     - ctrl-C displays a new prompt on a new line.
@@ -83,5 +81,5 @@ The `readline()` function can cause memory leaks. You don’t have to fix them. 
 
 Your program has to implement:
 
-- && and || with parenthesis for priorities.
-- Wildcards * should work for the current working directory.
+- `&&` and `||` with parenthesis for priorities.
+- Wildcards `*` should work for the current working directory.

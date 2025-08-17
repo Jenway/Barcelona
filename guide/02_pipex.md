@@ -1,15 +1,16 @@
-Pipex
+## Pipex
 
 Summary:
 
 This project will let you discover in detail a UNIX mechanism that you already know by using it in your program.
 
 ## Chapter I Foreword
+
 Cristina: "Go dance salsa somewhere `:)`"
 
 ## Chapter II Common Instructions
 
-same as [00_libft.md](00_libft.md#chapter-ii-common-instructions)
+refer to [commonInstructions_c](./common_c.md)
 
 ## Chapter III Mandatory part
 

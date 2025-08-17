@@ -1,4 +1,4 @@
-Webserv
+## Webserv
 
 Summary: This is when you finally understand why a URL starts with HTTP
 
@@ -40,14 +40,14 @@ forms, including the uploading of files.
 
 ## Chapter III Mandatory part
 
-| Program name | webserv |
-| -------------| ------- |
-| Turn in files |`Makefile`, `*.{h, hpp}`, `*.cpp`, `*.tpp`, `*.ipp`,`configuration files`|
-| Makefile | NAME, all, clean, fclean, re|
-|Arguments |\[A configuration file\] |
-|External functs.| Everything in C++ 98.<br/> fork, execve, waitpid, kill, signal, <br/> dup, dup2, pipe, fcntl, close,<br/>  socket, bind, listen, accept, connect,<br/> htons, htonl, ntohs, ntohl, <br/>getaddrinfo, freeaddrinfo, setsockopt, getsockname, <br/>send, recv, read, write,<br/> select, poll, epoll (epoll_create,epoll_ctl, epoll_wait), kqueue (kqueue, kevent), <br/>strerror, gai_strerror, errno, <br/> access, stat, chdir, opendir, readdir and closedir.<br/>socketpair, getprotobyname |
-| Libft authorized | n/a|
-| Description | A HTTP server in C++ 98|
+| Program name     | webserv                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Turn in files    | `Makefile`, `*.{h, hpp}`, `*.cpp`, `*.tpp`, `*.ipp`,`configuration files`                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Makefile         | NAME, all, clean, fclean, re                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Arguments        | \[A configuration file\]                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| External functs. | Everything in C++ 98.<br/> fork, execve, waitpid, kill, signal, <br/> dup, dup2, pipe, fcntl, close,<br/>  socket, bind, listen, accept, connect,<br/> htons, htonl, ntohs, ntohl, <br/>getaddrinfo, freeaddrinfo, setsockopt, getsockname, <br/>send, recv, read, write,<br/> select, poll, epoll (epoll_create,epoll_ctl, epoll_wait), kqueue (kqueue, kevent), <br/>strerror, gai_strerror, errno, <br/> access, stat, chdir, opendir, readdir and closedir.<br/>socketpair, getprotobyname |
+| Libft authorized | n/a                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Description      | A HTTP server in C++ 98                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 You must write a HTTP server in C++ 98.
 

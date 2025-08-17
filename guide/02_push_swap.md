@@ -1,4 +1,4 @@
-Push_swap
+## Push_swap
 
 Because Swap_push isn’t as natural
 
@@ -32,7 +32,7 @@ Sorting values is simple. To sort them the fastest way  possible is less simple.
 
 ## Chapter IV Common Instructions
 
-same as [00_libft.md](00_libft.md#chapter-ii-common-instructions)
+refer to [commonInstructions_c](./common_c.md)
 
 ## Chapter V Mandatory part
 
@@ -137,7 +137,7 @@ Integers from a get sorted in 12 instructions. Can you do better?
 
 | Program name     | push_swap                                                                              |
 | ---------------- | -------------------------------------------------------------------------------------- |
-| Turn in files    | Makefile, `*.h`, `*.c`                                                                     |
+| Turn in files    | Makefile, `*.h`, `*.c`                                                                 |
 | Makefile         | NAME, all, clean, fclean, re                                                           |
 | Arguments        | stack a: A list of integers                                                            |
 | External functs. | - read, write, malloc, free, <br> - exit <br> - ft_printf and any equivalent YOU coded |
@@ -184,7 +184,7 @@ This project leaves little room for adding extra features due to its simplicity.
 
 | Program name     | checker                                                                                |
 | ---------------- | -------------------------------------------------------------------------------------- |
-| Turn in files    | Makefile, `*.h`, `*.c`                                                                     |
+| Turn in files    | Makefile, `*.h`, `*.c`                                                                 |
 | Makefile         | bonus, all, clean, fclean, re                                                          |
 | Arguments        | stack a: A list of integers                                                            |
 | External functs. | - read, write, malloc, free, <br> - exit <br> - ft_printf and any equivalent YOU coded |
@@ -219,5 +219,3 @@ $>
 
 > [!WARNING]
 > You DO NOT have to reproduce the exact same behavior as the provided binary. It is mandatory to manage errors but it is up to you to decide how you want to parse the arguments.
->
-> The bonus part will only be assessed if the mandatory part is PERFECT. Perfect means the mandatory part has been integrally done and works without malfunctioning. If you have not passed ALL the mandatory requirements, your bonus part will not be evaluated at all.

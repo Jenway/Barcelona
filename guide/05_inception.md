@@ -1,4 +1,4 @@
-Inception
+## Inception
 
 Summary: This document is a System Administration related exercise.
 
@@ -150,6 +150,3 @@ Bonus list:
 
 > [!NOTE]
 > To complete the bonus part, you have the possibility to set up extra services. In this case, you may open more ports to suit your needs.
-
-> [!WARNING]
-> The bonus part will only be assessed if the mandatory part is PERFECT. Perfect means the mandatory part has been integrally done and works without malfunctioning. If you have not passed ALL the mandatory requirements, your bonus part will not be evaluated at all.

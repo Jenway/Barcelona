@@ -1,4 +1,4 @@
-FDF
+## FDF
 
 Wireframe model
 
@@ -10,7 +10,7 @@ Version: 3
 
 ## Chapter I Foreword
 
-TL;DR：JUST JUMP TO THE [Chapter II](#chapter-ii-introduction)
+**TL;DR**：JUST JUMP TO THE [Chapter II](#chapter-ii-introduction)
 
 This is what Wikipedia says about Ghosts’n Goblins:
 
@@ -65,27 +65,9 @@ This will be the opportunity for you to get familiar with the MiniLibX, to disco
 
 ## Chapter IV Common Instructions
 
-same as [00_libft.md](00_libft.md#chapter-ii-common-instructions)
+refer to [commonInstructions_c](./common_c.md)
 
 ## Chapter V Mandatory part
-
-<!-- Program name fdf
-Turn in files Makefile, *.h, *.c
-Makefile NAME, all, clean, fclean, re
-Arguments A file in format *.fdf
-External functs.
-- open, close, read, write,
-malloc, free, perror,
-strerror, exit
-- All functions of the math
-library (-lm compiler option,
-man man 3 math)
-- All functions of the MiniLibX
-- ft_printf and any equivalent
-YOU coded
-Libft authorized Yes
-Description This project is about creating a simple wireframe
-model of a landscape. -->
 
 | Program name     | `fdf`                                                                                                                                                                                                                                                    |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -162,6 +144,7 @@ Keep in mind that the goal of this project is not to parse maps! However, this d
 ## Chapter VI Bonus part
 
 Usually, you would be encouraged to develop your own original extra features. However,there will be much more interesting graphic projects later. They are waiting for you!!
+
 Don’t lose too much time on this assignment!
 
 You are allowed to use other functions to complete the bonus part as long as their use is justified during your evaluation. Be smart!
@@ -174,16 +157,6 @@ You will get some extra points if you can:
 - Rotate your model.
 - Add one more bonus of your choice.
 
-> [!warning]
-> The bonus part will only be assessed if the mandatory part is PERFECT. Perfect means the mandatory part has been integrally done and works without malfunctioning. If you have not passed ALL the mandatory requirements, your bonus part will not be evaluated at all.
-
 ## Chapter VII Submission and peer-evaluation
 
-Turn in your assignment in your Git repository as usual. Only the work inside your repository will be evaluated during the defense. Don’t hesitate to double check the names of your files to ensure they are correct.
-
 As these assignments are not verified by a program, feel free to organize your files as you wish, as long as you turn in the mandatory files and comply with the requirements.
-
-```
-file.bfe:VADYjxBiOQSAWNqB652klCj13URaziELdHd+2Z38
-XCMD9dvO9tSyFob6Il3NBX9YXrgZEiQK7JZJ7w5t0N80wMl7
-```

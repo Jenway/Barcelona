@@ -3,3 +3,4 @@ guide/FdF_42_example.png filter=lfs diff=lfs merge=lfs -text
 guide/inception_preamble.png filter=lfs diff=lfs merge=lfs -text
 guide/inception_diagram.png filter=lfs diff=lfs merge=lfs -text
 **/*.png filter=lfs diff=lfs merge=lfs -text
+guide/06_ft_transcendence/preamble.png filter=lfs diff=lfs merge=lfs -text

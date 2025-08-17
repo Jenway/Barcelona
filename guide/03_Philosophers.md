@@ -1,4 +1,4 @@
-Philosophers
+## Philosophers
 
 I never thought philosophy would be so deadly
 
@@ -26,7 +26,7 @@ Other investigations closely related to art, science, politics, or other pursuit
 
 ## Chapter II Common Instructions
 
-same as [00_libft.md](00_libft.md#chapter-ii-common-instructions)
+refer to [commonInstructions_c](./common_c.md)
 
 ## Chapter III Overview
 

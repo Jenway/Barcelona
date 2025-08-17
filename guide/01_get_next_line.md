@@ -1,4 +1,4 @@
-Get Next Line
+## Get Next Line
 
 Reading a line from a fd is way too tedious
 
@@ -14,7 +14,7 @@ This project will not only allow you to add a very convenient function to your c
 
 ## Chapter II Common Instructions
 
-same as [00_libft.md](00_libft.md#chapter-ii-common-instructions)
+refer to [commonInstructions_c](./common_c.md)
 
 ## Chapter III Mandatory part
 
@@ -89,13 +89,9 @@ files:
 - get_next_line_bonus.h
 - get_next_line_utils_bonus.c
 
-> [!WARNING]
-> The bonus part will only be assessed if the mandatory part is PERFECT. Perfect means the mandatory part has been integrally done and works without malfunctioning.If you have not passed ALL the mandatory requirements, your bonus part will not be evaluated at all.
-
-
 ## Chapter V Submission and peer-evaluation
 
-Turn in your assignment in your Git repository as usual. Only the work inside your repository will be evaluated during the defense. Don’t hesitate to double check the names of your files to ensure they are correct.
+
 
 > [!NOTE]
 > When writing your tests, remember that:
@@ -106,7 +102,3 @@ Turn in your assignment in your Git repository as usual. Only the work inside yo
 > Be smart and cross-check with your peers. Prepare a full set of diverse tests for defense.
 
 Once passed, do not hesitate to add your `get_next_line()` to your libft.
-
-```PLAINTEXT
-/=∂/\/\[](_)§ /\/\@|V †|-|@¯|¯ /-/!570®1<|-\£1_`/ ¢@/\/\ε vv!7}{ ???
-```
