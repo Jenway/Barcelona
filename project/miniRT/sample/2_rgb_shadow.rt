@@ -1,0 +1,17 @@
+# Scene 2: RGB Shadows
+# Best viewed from directly above. A white sphere on a white plane acts as a canvas.
+
+# Very low ambient light to make shadows deep and dark
+A 0.05 255,255,255
+# Camera looking straight down
+C 0,50,0 0,-1,0 60
+# Three colored lights forming a triangle above the sphere
+L -15,20,15 0.7 255,0,0
+L 15,20,15 0.7 0,255,0
+L 0,20,-20 0.7 0,0,255
+
+# A pure white floor to catch the colored light
+pl 0,-10,0 0,1,0 255,255,255
+
+# A highly specular white sphere to catch highlights from all three lights
+sp 0,-2,0 8 255,255,255 1.0,256

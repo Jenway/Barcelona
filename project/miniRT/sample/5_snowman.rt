@@ -1,0 +1,19 @@
+# Scene 5: The Snowman
+# A fun scene combining multiple spheres to create a figure.
+
+A 0.15 255,255,255
+C 0,10,50 0,0,1 55
+L 30,40,40 0.9 255,255,255
+
+# A snowy ground plane
+pl 0,-10,0 0,1,0 240,240,255 0.1,16
+
+# The snowman's body (matte white)
+sp 0,-5,0 10 255,255,255 0.1,8
+sp 0,2,0 8 255,255,255 0.1,8
+sp 0,8,0 6 255,255,255 0.1,8
+
+# Details (shiny)
+sp 0,8.5,5.8 0.5 0,0,0 0.5,64 # Left eye
+sp 1.5,8.5,5.5 0.5 0,0,0 0.5,64 # Right eye
+sp 0.75,7.8,-7 1 255,100,0 0.5,64 # Nose

@@ -1,0 +1,30 @@
+# sphere_stack.rt: A pyramid of spheres with a strong directional light.
+
+A   0.15    20,20,20
+
+# Camera looking at the stack from a slightly elevated angle.
+C   0,15,60     0,-0.2,-1   60
+
+# Strong white light from top-front-right for clear shadows.
+L   30,60,20    1.0         255,255,255
+
+# Floor plane
+pl  0,-10,0     0,1,0       180,180,180
+
+# Base layer of spheres (4 spheres)
+sp  -15,-5,0    10          255,0,0
+sp  5,-5,0      10          0,255,0
+sp  -5,-5,-10   10          0,0,255
+sp  15,-5,-10   10          255,255,0
+
+# Second layer (3 spheres)
+sp  -5,5,-5     10          255,100,0
+sp  15,5,-5     10          0,255,100
+sp  5,5,5       10          0,100,255
+
+# Third layer (2 spheres)
+sp  5,15,0      10          255,0,128
+sp  -5,15,0     10          128,0,255
+
+# Top sphere (1 sphere)
+sp  0,25,0      10          255,255,255

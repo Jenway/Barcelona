@@ -1,0 +1,15 @@
+# Scene 1: The Classic
+# A shiny sphere on a matte plane. Good for testing basics.
+
+# A moderate white ambient light
+A 0.1 255,255,255
+# A standard camera view
+C 0,20,-40 0,-0.25,1 50
+# A single, bright white light source from the top-left
+L -20,30,-30 0.8 255,255,255
+
+# A matte gray floor
+pl 0,-5,0 0,1,0 180,180,180
+
+# A shiny red sphere
+sp 0,0,0 12 255,0,0 0.8,128

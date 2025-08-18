@@ -1,0 +1,24 @@
+#    ----------------------------------
+#    Example    Scene    for    miniRT
+#    ----------------------------------
+
+#    Mandatory    Elements:    Ambient    Light    and    Camera
+A    0.1    255,255,255
+C    -50,20,0    1,0,0    75
+                
+#    A    bright,    white    main    light    source
+L    0,50,0    0.9    255,255,255
+
+#    ---    Objects    ---
+
+#    A    large,    matte    red    sphere    in    the    center
+sp    0,0,0    20    255,0,0
+
+#    A    small,    highly    reflective    and    shiny    blue    sphere    on    the    side
+sp    25,5,-10    10    0,127,255    1.0,512    0.8
+
+#    A    floor    plane    with    a    slight    gray    specular    highlight
+pl    0,-10,0    0,1,0    150,150,150    0.2,32
+
+#    A    green    cylinder
+cy    -20,0,20    0.707,0.707,0    8    15    0,255,127    255,255,255,128

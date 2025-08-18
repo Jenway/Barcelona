@@ -1,0 +1,83 @@
+# Custom Scene: A multi-object scene with two lights and various colored primitives.
+
+# A: [Ambient lighting ratio] [R,G,B color]
+# Defines the overall, non-directional light in the scene.
+# Ratio: 0.3 (moderate ambient light)
+# Color: 255,255,255 (white light)
+A	0.3				255,255,255
+
+# C: [Viewpoint] [Orientation vector] [FOV]
+# Defines the camera's position, direction it's looking, and field of view.
+# Viewpoint: 50,10,20 (Camera located at X=50, Y=10, Z=20)
+# Orientation: 0,0,1 (Looking straight along the positive Z-axis. Note: Your renderer might interpret this differently, e.g., looking at a point, or needing normalization.)
+# FOV: 30 degrees (A narrow field of view, creating a telephoto or zoomed-in effect)
+C	50,10,20		-0.2,0,1			30
+
+# L: [Light point] [Brightness ratio] [R,G,B color]
+# Defines a point light source in the scene.
+# Light 1:
+# Point: 70,100,20 (Located high up, slightly to the right and front)
+# Brightness: 0.8 (Strong intensity)
+# Color: 255,250,250 (Slightly warm white light)
+L	70,100,20		0.8				255,250,250
+# Light 2:
+# Point: 10,60,50 (Located mid-height, to the left and slightly back)
+# Brightness: 0.6 (Moderate intensity)
+# Color: 250,255,255 (Slightly cool white light)
+L	10,60,50		0.6				250,255,255
+
+# pl: [Coordinates] [Normal vector] [R,G,B color]
+# Defines an infinite plane.
+# Plane 1 (Purple-Red Floor):
+# Coordinates: 0,-10,0 (A point on the plane, at Y=-10)
+# Normal: 0,-1,0 (Normal pointing downwards, meaning the visible side is above Y=-10)
+# Color: 120,20,60 (Dark purplish-red)
+pl	0,-10,0			0,-1,0			120,20,60
+# Plane 2 (Blue Back Wall):
+# Coordinates: 0,0,200 (A point on the plane, at Z=200)
+# Normal: 0,0,-1 (Normal pointing along the negative Z-axis, meaning the visible side is towards the camera)
+# Color: 25,0,100 (Dark blue)
+pl	0,0,200			0,0,-1			25,0,100
+# Plane 3 (Green-Blue Left Wall):
+# Coordinates: 0,0,0 (A point on the plane, at origin)
+# Normal: -1,0,0 (Normal pointing along the negative X-axis, meaning the visible side is towards positive X)
+# Color: 25,180,100 (Greenish-blue)
+pl	0,0,0			-1,0,0			25,180,100
+
+# sp: [Center coordinates] [Diameter] [R,G,B color]
+# Defines a sphere.
+# Sphere 1 (Red):
+# Center: 50,0,100
+# Diameter: 10 (Radius 5)
+# Color: 255,0,0 (Red)
+sp	50,0,100		10				255,0,0
+# Sphere 2 (Orange):
+# Center: 40,0,100
+# Diameter: 12 (Radius 6)
+# Color: 255,120,0 (Orange)
+sp	40,0,100		12				255,120,0
+# Sphere 3 (Small Green):
+# Center: 40,0,80
+# Diameter: 2 (Radius 1)
+# Color: 0,120,0 (Green)
+sp	40,0,80			2				0,120,0
+# Sphere 4 (Teal):
+# Center: 65,0,100
+# Diameter: 5 (Radius 2.5)
+# Color: 0,255,127 (Teal)
+sp	65,0,100		5				0,255,127
+# Sphere 5 (Cyan):
+# Center: 65,10,100 (Floating above Sphere 4)
+# Diameter: 7 (Radius 3.5)
+# Color: 0,255,255 (Cyan)
+sp	65,10,100		7				0,255,255
+
+# cy: [Center coordinates] [Axis vector] [Diameter] [Height] [R,G,B color]
+# Defines a cylinder.
+# Cylinder 1 (Cyan):
+# Center: 5,0,90
+# Axis: 0,1,0 (Aligned with the Y-axis, standing upright)
+# Diameter: 4.2 (Radius 2.1)
+# Height: 21.42
+# Color: 0,255,255 (Cyan)
+cy	5,0,90			0,1,0			4.2						21.42	0,255,255

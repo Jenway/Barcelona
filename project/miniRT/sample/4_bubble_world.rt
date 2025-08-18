@@ -1,0 +1,22 @@
+# Scene 4: Bubble World
+# Many reflective spheres to test ray bouncing and transparency effects.
+
+A 0.2 255,255,255
+C 0,15,-40 0,-0.1,1 70
+L -30,40,-30 1.0 255,255,255
+
+# Add cololful light
+
+L 30,40,-30 0.8 255,200,200
+L 0,40,30 0.6 200,255,200
+
+
+# A dark floor to make the reflections stand out
+pl 0,-10,0 0,1,0 50,50,50 0.5,64 0.4
+
+# The "bubbles" - high reflectivity and sharp specular highlights
+sp 0,0,0 10 200,200,255 1.0,512 0.8
+sp 15,5,15 7 200,255,200 1.0,512 0.9
+sp -12,-2,8 8 255,200,200 1.0,512 0.85
+sp -3,15,20 5 255,255,200 1.0,512 0.7
+sp 8,-5,-5 4 200,255,255 1.0,512 0.95

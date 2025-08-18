@@ -1,0 +1,16 @@
+{
+    "clangd.arguments": [
+        /*clangd feature options*/
+        "--all-scopes-completion", // If set to true, code completion will include index symbols that are not defined in the scopes (e.g. namespaces) visible from the code completion point. Such completions can insert scope qualifiers
+        "--background-index", // Index project code in the background and persist index on disk.
+        // "--background-index-priority=<value>", // Thread priority for building the background index. The effect of this flag is OS-specific.
+        "--clang-tidy", // Enable clang-tidy diagnostics
+        "--completion-style=detailed", // Granularity of code completion suggestions
+        "--fallback-style=WebKit", // clang-format style to apply by default when no .clang-format file is found
+        "--header-insertion=iwyu", // Add #include directives when accepting code completions
+        "--header-insertion-decorators", // Prepend a circular dot or space before the completion label, depending on whether an include line will be inserted or not
+        "-j=20", // Number of async workers used by clangd. Background index also uses this many workers.
+        "--pch-storage=memory", // Storing PCHs in memory increases memory usages, but may improve performance
+        // "--query-driver='C:/Users/Jenway/scoop/apps/w64devkit/current/bin/g++.exe'", // Comma separated list of globs for white-listing gcc-compatible drivers that are safe to execute. Drivers matching any of these globs will be used to extract system includes. e.g. /usr/bin/**/clang-*,/path/to/repo/**/g++-*
+    ],
+}

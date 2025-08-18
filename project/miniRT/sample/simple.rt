@@ -1,0 +1,19 @@
+# simple.rt: A basic scene with one of each object.
+
+# A: [Ambient lighting ratio] [R,G,B color]
+A   0.2     255,255,255
+
+# C: [Viewpoint] [Orientation vector] [FOV]
+C   0,50,21     0,-1,-0.1     70
+
+# L: [Light point] [Brightness ratio] [R,G,B color]
+L   -40,20,30     0.7      255,255,255
+
+# pl: [Coordinates] [Normal vector] [R,G,B color]
+pl  0,0,0       0,1,0     255,0,225
+
+# sp: [Center coordinates] [Diameter] [R,G,B color]
+sp  0,0,20      20        255,0,0
+
+# cy: [Center coordinates] [Axis vector] [Diameter] [Height] [R,G,B color]
+cy  50,0,6      0,0,1     14.2       21.42      10,0,255

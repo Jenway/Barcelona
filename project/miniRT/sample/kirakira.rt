@@ -1,0 +1,60 @@
+# showcase_reflections_refined.rt: A scene designed to showcase Blinn-Phong specular highlights and mirror reflections,
+# with improved clarity and spatial understanding.
+
+# A: [Ambient lighting ratio] [R,G,B color]
+# Very low ambient light to emphasize direct lighting and reflections.
+# A bit darker than before to allow more contrast.
+A   0.05    10,10,10
+
+# C: [Viewpoint] [Orientation vector] [FOV]
+# Camera slightly elevated, looking into the room, a bit closer to the main action.
+C   0,10,40     0,-0.2,-1     60
+
+# L: [Light point] [Brightness ratio] [R,G,B color]
+# Lights are less bright overall, and their positions are more distinct.
+# Light 1 (Main White Light): High and to the front-left, strong white light.
+L   -20,35,20     0.6      255,255,255
+# Light 2 (Warm Light): Lower and to the front-right, adds a warm tint.
+L   20,5,10       0.4      255,150,0
+# Light 3 (Cool Light - back fill): Higher and behind, very subtle cool backlight.
+L   0,40,-15      0.2      0,100,255
+
+
+# pl: [Coordinates] [Normal vector] [Diffuse_RGB] [Specular_RGB] [Shininess] [Reflectivity]
+# Room planes: Introduce more diffuse surfaces to provide visual anchors and better define space.
+
+# Floor: Dark gray, still highly reflective and shiny (like a highly polished mirror floor).
+pl  0,-10,0     0,1,0     50,50,50        255,255,255 200.0 0.95
+# Ceiling: Light gray, mostly diffuse, very low reflectivity. This gives a clear top boundary.
+pl  0,50,0      0,-1,0    200,200,200     50,50,50    10.0  0.1 # Very low reflectivity
+
+# Back Wall: Red, mostly diffuse. This will be the main background color.
+pl  0,0,-20     0,0,1     200,0,0         50,50,50    20.0  0.05 # Almost fully diffuse, just a hint of shine
+# Front Wall (behind camera, for reflections): Green, mostly diffuse.
+pl  0,0,80      0,0,-1    0,200,0         50,50,50    20.0  0.05
+# Left Wall: Blue, mostly diffuse.
+pl  -40,0,0     1,0,0     0,0,200         50,50,50    20.0  0.05
+# Right Wall: Yellow, mostly diffuse.
+pl  40,0,0      -1,0,0    200,200,0       50,50,50    20.0  0.05
+
+
+# sp: [Center coordinates] [Diameter] [Diffuse_RGB] [Specular_RGB] [Shininess] [Reflectivity]
+# Spheres with varying reflectivity to add visual interest.
+
+# Central Chrome Sphere: Large, still very highly reflective white sphere. This is the main showcase.
+sp  0,0,0       15        200,200,200     255,255,255 250.0 0.98
+
+# Orange Reflective Sphere: Smaller, to the front-left, moderately reflective.
+sp  -10,-5,10   6         255,100,0       200,200,200 100.0 0.7
+# Teal Reflective Sphere: Smaller, to the back-right, slightly less reflective.
+sp  10,-5,-5    6         0,150,100       200,200,200 80.0  0.6
+# Magenta Reflective Sphere: Small, floating high, quite reflective.
+sp  -5,15,5     5         255,0,255       255,255,255 180.0 0.9
+
+# cy: [Center coordinates] [Axis vector] [Diameter] [Height] [Diffuse_RGB] [Specular_RGB] [Shininess] [Reflectivity]
+# A reflective cylinder acting as a pillar.
+
+# Purple Reflective Pillar: Standing upright in the mid-ground, moderate reflectivity.
+cy  -15,-10,-5  0,1,0     4          20         150,50,200      255,255,255 100.0 0.7
+# Small Green-Yellow Disc: Floating flat near the central sphere, low reflectivity.
+cy  10,0,10     0,0,1     7          1          100,200,0       100,100,100 30.0  0.3

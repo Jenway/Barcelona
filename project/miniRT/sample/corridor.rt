@@ -1,0 +1,39 @@
+# corridor.rt: A geometric corridor with repeating spheres and a distant light.
+
+A   0.1     10,10,10
+
+# Camera at the entrance of the corridor, looking straight down.
+C   0,0,-5      0,0,1       75
+
+# Distant light at the end of the corridor.
+L   0,0,100     1.0         255,255,200
+
+# Floor
+pl  0,-10,0     0,1,0       80,80,80
+# Ceiling
+pl  0,10,0      0,-1,0      80,80,80
+# Left Wall
+pl  -10,0,0     1,0,0       100,50,50
+# Right Wall
+pl  10,0,0      -1,0,0      50,50,100
+
+# Repeating spheres along the corridor
+# Red spheres on the left side
+sp  -7, -5, 10    3         255,0,0
+sp  -7, -5, 30    3         255,0,0
+sp  -7, -5, 50    3         255,0,0
+sp  -7, -5, 70    3         255,0,0
+
+# Blue spheres on the right side
+sp  7, -5, 20     3         0,0,255
+sp  7, -5, 40     3         0,0,255
+sp  7, -5, 60     3         0,0,255
+sp  7, -5, 80     3         0,0,255
+
+# Cylinders at the top of the walls
+cy  -9,7.5,15   0,0,1   1      5       150,150,0  # Yellow
+cy  9,7.5,15    0,0,1   1      5       150,150,0
+cy  -9,7.5,45   0,0,1   1      5       150,150,0
+cy  9,7.5,45    0,0,1   1      5       150,150,0
+cy  -9,7.5,75   0,0,1   1      5       150,150,0
+cy  9,7.5,75    0,0,1   1      5       150,150,0

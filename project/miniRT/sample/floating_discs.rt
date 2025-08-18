@@ -1,0 +1,31 @@
+# floating_discs.rt: Floating disc-like cylinders with multiple colored lights.
+
+A   0.2     50,50,50
+
+# Camera looking slightly down at the floating objects.
+C   0,20,40     0,-0.2,-1   75
+
+# Light 1: Warm light from top-left-front
+L   -30,40,10   0.7         255,200,100
+# Light 2: Cool light from right-back-bottom
+L   30,10,30    0.5         100,200,255
+
+# Floor (dark, to emphasize floating objects)
+pl  0,-10,0     0,1,0       50,50,50
+
+# Floating discs (cylinders with small height)
+# Disc 1: Red disc, low
+cy  0,0,0       0,1,0       20          2           255,0,0
+
+# Disc 2: Green disc, slightly higher and rotated (axis vector)
+# NOTE: Cylinder AABB might be loose for rotated axis. The visual rotation is simulated by axis.
+cy  15,5,-10    0,0,1       15          2           0,255,0
+
+# Disc 3: Blue disc, highest
+cy  -10,10,10   0,1,0       10          2           0,0,255
+
+# Disc 4: Yellow disc, behind others
+cy  5,3,-20     0,0,1       18          2           255,255,0
+
+# Disc 5: Purple disc, small, foreground
+cy  -20,2,-5    1,0,0       8           2           128,0,128

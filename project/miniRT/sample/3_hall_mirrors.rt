@@ -1,0 +1,15 @@
+# Scene 3: Hall of Mirrors
+# NOTE: Render with high depth for best effect! (e.g., --depth 10)
+
+A 0.1 255,255,255
+# Camera looking down the "hall"
+C 0,3,-50 0,0,1 25
+# Light source placed inside the hall
+L 0,15,0 0.8 255,255,180
+
+# The two mirror planes, facing each other
+pl 0,0,50 0,0,-1 100,100,100 0.1,32 0.9
+pl 0,0,-60 0,0,1 100,100,100 0.1,32 0.9
+
+# A central object to be reflected infinitely
+cy 0,-5,10 1,0,0 8 10 255,0,127 0.8,64
