@@ -19,16 +19,16 @@ pl  10,0,0      -1,0,0      50,50,100
 
 # Repeating spheres along the corridor
 # Red spheres on the left side
-sp  -7, -5, 10    3         255,0,0
-sp  -7, -5, 30    3         255,0,0
-sp  -7, -5, 50    3         255,0,0
-sp  -7, -5, 70    3         255,0,0
+sp  -7,-5,10    3         255,0,0
+sp  -7,-5,30    3         255,0,0
+sp  -7,-5,50    3         255,0,0
+sp  -7,-5,70    3         255,0,0
 
 # Blue spheres on the right side
-sp  7, -5, 20     3         0,0,255
-sp  7, -5, 40     3         0,0,255
-sp  7, -5, 60     3         0,0,255
-sp  7, -5, 80     3         0,0,255
+sp  7,-5,20     3         0,0,255
+sp  7,-5,40     3         0,0,255
+sp  7,-5,60     3         0,0,255
+sp  7,-5,80     3         0,0,255
 
 # Cylinders at the top of the walls
 cy  -9,7.5,15   0,0,1   1      5       150,150,0  # Yellow
