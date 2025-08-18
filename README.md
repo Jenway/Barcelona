@@ -16,7 +16,7 @@ Projects from [42 School](https://42.fr), collected from Internet
 | 02    |     [Push_swap](project/push_swap)      | [02_push_swap](guide/02_push_swap.md)               | ✅ Done |                     |
 | 03    |  [Philosophers](project/Philosophers)   | [03_Philosophers](guide/03_Philosophers.md)         | ✅ Done |                     |
 | 03    |     [Minishell](project/minishell)      | [03_minishell](guide/03_Minishell.md)               | ✅ Done |                     |
-| 04    |                 MiniRT                  | [04_MiniRT](guide/04_MiniRT.md)                     | 🧱 ing  | `Cub3d`             |
+| 04    |        [MiniRT](project/miniRT/)        | [04_MiniRT](guide/04_MiniRT.md)                     | ✅ Done | `Cub3d`             |
 | 04    |   [NetPractice](project/NetPractice)    | [04_netpractice](guide/04_netpractice.md)           | ✅ Done |                     |
 | 04&05 | [CPP_Modules 00-09](project/cpp_module) | [04_cpp](guide/04_CPP_Module/)                      | ✅ Done |                     |
 | 05    |     [Inception](project/Inception/)     | [05_inception](guide/05_inception.md)               | ✅ Done |                     |
