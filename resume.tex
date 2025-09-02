@@ -1,0 +1,66 @@
+\documentclass[11pt,a4paper,sans]{moderncv}
+
+% Modern CV theme and style
+\moderncvstyle{classic}
+\moderncvcolor{blue}
+
+% Character encoding
+\usepackage[utf8]{inputenc}
+
+% Page margins
+\usepackage[scale=0.75]{geometry}
+
+% Personal data
+\name{Your}{Name}
+\title{Software Engineer}
+\address{Your Street}{Your City}{Your Country}
+\phone[mobile]{+1~(555)~123~4567}
+\email{your.email@example.com}
+\homepage{github.com/yourusername}
+\social[linkedin]{yourname}
+\photo[64pt][0.4pt]{picture}
+
+% Document
+\begin{document}
+
+\makecvtitle
+
+\section{Education}
+\cventry{2020--2024}{Bachelor of Computer Science}{University Name}{City}{\textit{GPA: 3.8/4.0}}{Relevant coursework: Data Structures, Algorithms, Software Engineering}
+
+\section{Experience}
+\cventry{2023--Present}{Software Engineer Intern}{Company Name}{City}{}{
+\begin{itemize}
+\item Developed web applications using React and Node.js
+\item Implemented REST APIs and database integrations
+\item Collaborated with cross-functional teams using Agile methodology
+\end{itemize}}
+
+\cventry{2022--2023}{Teaching Assistant}{University Name}{City}{}{
+\begin{itemize}
+\item Assisted students with programming assignments in C++ and Python
+\item Conducted weekly lab sessions for 30+ students
+\item Graded assignments and provided constructive feedback
+\end{itemize}}
+
+\section{Projects}
+\cventry{2023}{42 School Projects}{Personal Learning}{}{}{
+\begin{itemize}
+\item \textbf{Webserv}: Built a HTTP server from scratch in C++
+\item \textbf{MiniRT}: Implemented a ray tracer for 3D rendering
+\item \textbf{Philosophers}: Solved dining philosophers problem with threading
+\item \textbf{Minishell}: Created a bash-like shell with command parsing
+\end{itemize}}
+
+\section{Technical Skills}
+\cvitem{Programming Languages}{C, C++, Python, JavaScript, TypeScript}
+\cvitem{Web Technologies}{React, Node.js, HTML5, CSS3, REST APIs}
+\cvitem{Databases}{MySQL, PostgreSQL, MongoDB}
+\cvitem{Tools \& Technologies}{Git, Docker, Linux, Make, CMake}
+\cvitem{Other}{Data Structures, Algorithms, System Programming, Network Programming}
+
+\section{Languages}
+\cvitemwithcomment{English}{Native/Fluent}{Conversational and written fluency}
+\cvitemwithcomment{Chinese}{Intermediate}{Good command of written and spoken}
+
+\end{document}

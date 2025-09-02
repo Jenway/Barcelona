@@ -23,6 +23,14 @@ Projects from [42 School](https://42.fr), collected from Internet
 | 05    |       [Webserv](project/Webserv/)       | [05_Webserv](guide/05_Webserv.md)                   | ✅ Done | `Ft_irc`            |
 | 06    |            Ft_transcendence             | [06_Ft_transcendence](guide/06_ft_transcendence.md) | 🧱 ing  |                     |
 
+## LaTeX Resume System
+
+This repository includes an automated LaTeX resume compilation system. See [LATEX_RESUME.md](LATEX_RESUME.md) for details.
+
+- `resume.tex` - LaTeX resume source file
+- Auto-compiles to PDF on push via GitHub Actions
+- Publishes compiled PDF to GitHub releases
+
 ## refer
 
 - [rphlr/42-Subjects](https://github.com/rphlr/42-Subjects)
